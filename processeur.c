@@ -150,7 +150,9 @@ void add()
 	int v1,v2;
 	int type_verfi=0;
 
-	pop(&process,retour);
+	if(pop(&process,retour))
+		push (process+1,retour);
+/*
 	v1 = pop(&t_aug1,type);
 	v2 = pop(&t_aug2,type);
 	if(v1 && v2)
@@ -169,15 +171,15 @@ void add()
 	{
 		printf("[ERROR]: sementic, lack varable");
 	}
-
-	if(type_verfi)
-	{
+*/
+//	if(type_verfi)
+//	{
 		pop(&aug1,data);
 		pop(&aug2,data);
 		res = aug1 + aug2;
 		push(res,data);
-		push(process+1,retour);
-	}
+		printf("Test(add):pushed %d\n",res);
+//	}
 	
 }
 
@@ -188,6 +190,9 @@ void point()
 	int v1;
 	int type_verfi=0;
 
+	if(pop(&process,retour))
+		push (process+1,retour);
+/*
 	pop(&process,retour);
 	v1 = pop(&t_aug1,type);
 	if(v1)
@@ -206,13 +211,13 @@ void point()
 	{
 		printf("[ERROR]: sementic, lack varable");
 	}
+*/
 
-	if(type_verfi)
-	{
+//	if(type_verfi)
+//	{
 		pop(&aug1,data);
 		printf("%d\n",aug1);
-		push(process+1,retour);
-	}
+//	}
 }
 
 void fin()
@@ -229,36 +234,37 @@ void lit()//put a INT in stack
 	pop(&processer_pos,retour);
 	push(processer_pos+2,retour);
 	
-	var_type = test_type(VM[processer_pos+1]);
-	if(var_type == INT)
-	{
+	//var_type = test_type(VM[processer_pos+1]);
+	//if(var_type == INT)
+	//{
 		push(INT,type);
 		push(VM[processer_pos+1],data);
-	}
-	else printf("[ERROR]: sementic fault, %s not a INT type\n",currtext);
+	//}
+	//else printf("[ERROR]: sementic fault, %s not a INT type\n",currtext);
 }
 
+/*
 void two_point()
 /*Let function processeur call v_prosseur 
-* in the next loop*/
+* in the next loop
 {
 	processeur_state = 1;
 }
-
+*/
 int test_func(char* s,int *LAC_pos)
 {
 	int pos,s_length=0,k=0,flag=1;//pos in LAC
 	
 	k=0;
 	while(s[k++]!='\0') s_length++;
-	pos = LAC[LAC_length-1];
+	pos = LAC_length;
 	while(pos>0)
 	{
 		pos = LAC[pos-1];
 		flag = 1;
 		if(s_length==LAC[pos])//length much
 		{
-			printf("Test: length much\n");
+			printf("Test: length much at %d\n",pos);
 			for(k=0;k<s_length;k++)
 			{
 				if(s[k]!=LAC[pos+k+1])
@@ -288,15 +294,15 @@ int v_processer(D_linklist* lex_list)
 {
 	int func_input_num=0,func_output_num=0;
 	int func_input[10],func_output[10];
-	stack *temp_data,*temp_type;
-	temp_data = create_stack();
-	temp_type = create_stack();
-	int para_type;
+	stack *temp_data_stack,*temp_type_stack;
+	temp_data_stack = create_stack();
+	temp_type_stack = create_stack();
+	int para_type,var_type;
 	int flag=1;
 	//if an Error detected, rewrite VM to initial length
 	int VM_init_length = VM_length;
 
-	char *func_name[20];
+	char func_name[20];
 	int func_LAC_pos,para_LAC_pos,return_LAC_pos,func_VM_pos;
 
 	int k;
@@ -366,7 +372,7 @@ do
 		//test type of parameter
 		for(k=0;k<LAC[para_LAC_pos];k++)
 		{
-			if(pop(temp_type,type))
+			if(pop(&para_type,temp_type_stack))
 			{
 				if(para_type!=LAC[para_LAC_pos+k+1])
 				//find wrong type
@@ -388,7 +394,7 @@ do
 		var_type = test_type(currtext);
 		if(var_type == INT)
 		{
-			push(INT,temp_type);
+			push(INT,temp_type_stack);
 			VM[VM_length++] = 0;//function lit
 			VM[VM_length++] = atoi(currtext);
 			printf("Test(v_processer):add %s in VM\n",currtext);
@@ -416,58 +422,68 @@ int type_test_flag=1;
 if(!D_to_begin(lex_list)) return;//list empty
 do
 {
-	if(processeur_state == 1)
+	currtext = lex_list->fence->content->value;
+	if(currtext[0]==':' && currtext[1]=='\0')
 	{
+		D_to_next(lex_list);
 		v_processer(lex_list);//define a function
 		processeur_state = 0;
 	}
+
 	currtext = lex_list->fence->content->value;
-	
 	if(test_func(currtext,&func_LAC_pos))
 	{
 		para_LAC_pos = func_LAC_pos + 1 + LAC[func_LAC_pos];
 		return_LAC_pos = para_LAC_pos + 1 + LAC[para_LAC_pos];
 
-		printf("Test: func_LAC_pos:%d, re:%d\n",func_LAC_pos, return_LAC_pos);
+		printf("Test(processer): func_LAC_pos:%d, re:%d\n",func_LAC_pos, return_LAC_pos);
 		func_VM_pos = LAC[return_LAC_pos + 1 + LAC[return_LAC_pos]];
-/*
+
 		//test type of parameter
 
 		
 		for(k=0;k<LAC[para_LAC_pos];k++)
 		{
-			if(pop(para_type,type))
+			if(pop(&para_type,type))
 			{
 				if(para_type!=LAC[para_LAC_pos+k+1])
 				{
-					flag = 0;
+					type_test_flag = 0;
 					printf("[ERROR]: sementic fault, wrong type\n");
 					break;
 				}
 			}
 			else
 			{
-				flag = 0;
+				type_test_flag = 0;
 				printf("[ERROR]: sementic fault, lack of parametter\n");
 			}
 		}
-*/
-		if(VM[func_VM_pos]==0)//fonction de base
+
+		if(type_test_flag)
 		{
-			printf("Test: VM pos %d\n",func_VM_pos);
-			function = processeur[VM[func_VM_pos+1]];
-			printf("execute function %s\n",currtext);
-			function();
-		}
-		else if(VM[func_VM_pos]==1)//fonction defini en LAC
-		{
-			int VM_num;
-			push(func_VM_pos+1,retour);
-			while(stack_get_top(&VM_num,retour))
+			for(k=0;k<LAC[return_LAC_pos];k++)
 			{
-				function = processeur[VM[VM_num]];
+				push(LAC[return_LAC_pos+1+k],type);
+			}
+			if(VM[func_VM_pos]==0)//fonction de base
+			{
+				printf("Test: VM pos %d\n",func_VM_pos);
+				function = processeur[VM[func_VM_pos+1]];
+				printf("execute function %s\n",currtext);
 				function();
 			}
+			else if(VM[func_VM_pos]==1)//fonction defini en LAC
+			{
+				int VM_num;
+				push(func_VM_pos+1,retour);
+				while(stack_get_top(&VM_num,retour))
+				{
+					function = processeur[VM[VM_num]];
+					function();
+				
+			}
+}
 		}
 
 	}
