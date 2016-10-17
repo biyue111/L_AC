@@ -357,7 +357,12 @@ do
 	}
 	else if(currtext[0]==';' && currtext[1]=='\0')
 	{
-		
+		for(k=func_output_num-1;k>=0;k--)
+		{
+			pop(&func_output[k],temp_type_stack);
+		}
+		func2LAC(func_name,func_input_num,func_input,func_output_num,func_output,NULL,1);
+
 		return 0;//no error
 	}
 	
@@ -386,8 +391,13 @@ do
 				func_input[func_input_num++] = LAC[para_LAC_pos+k+1];
 			}
 		}
-
+		for(k=0;k<LAC[return_LAC_pos];k++)	
+		{
+			push(LAC[return_LAC_pos+k+1],temp_type_stack);
+		}
 		VM[VM_length++] = func_VM_pos;
+
+	
 	}
 	else
 	{
