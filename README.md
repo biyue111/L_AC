@@ -4,27 +4,35 @@ This project realise a comiler of language L_AC
 
 0. lit
 
-1. fin
+1. str
 
-2. .
+2. fin
 
-3. +
+3. .
 
-4. \-
+4. +
 
-5. *
+5. \-
 
-6. = (comparison)
+6. *
 
-7. dup
+7. = (comparison)
 
-8. drop
+8. dup
 
-9. swap
+9. drop
 
-10. count
+10. swap
 
-11. type
+11. count
+
+12. type
+
+13. if
+
+13. else
+
+14. then
 
 12. && (optional functions from now on)
 
@@ -38,6 +46,9 @@ This project realise a comiler of language L_AC
 
 17. recurse
 
+18. '
+
+19. is
 ##Follower
 
 - Hugo
