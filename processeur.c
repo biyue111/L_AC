@@ -438,6 +438,7 @@ pfunc_base function;
 int var_type;
 int k=0;
 int type_test_flag=1;
+int error_rep;
 if(!D_to_begin(lex_list)) return;//list empty
 do
 {
@@ -445,7 +446,15 @@ do
 	if(currtext[0]==':' && currtext[1]=='\0')
 	{
 		D_to_next(lex_list);//skip ':'
-		v_processer(lex_list);//define a function
+		printf("Test(processer):enter v_processer:\n");
+		error_rep = v_processer(lex_list);//define a function
+		if(!error_rep)
+		{
+			printf("Test(processer):Defined the function\n");
+			if(!D_to_next(lex_list))//
+				break;
+		}
+
 	}
 
 	currtext = lex_list->fence->content->value;
