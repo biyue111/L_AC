@@ -10,7 +10,7 @@ This project realise a comiler of language L_AC
 
 3. +
 
-4. -
+4. \-
 
 5. *
 
@@ -26,9 +26,7 @@ This project realise a comiler of language L_AC
 
 11. type
 
-(optional)
-
-12. &&
+12. && (optional functions from now on)
 
 13. ||
 
