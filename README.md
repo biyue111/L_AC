@@ -1,6 +1,7 @@
 # L_AC
 This project realise a comiler of language L_AC
-##The order of basic functions (function de base)
+##The order of basic functions (fonction de base)
+
 0. lit
 
 1. fin
@@ -13,7 +14,7 @@ This project realise a comiler of language L_AC
 
 5. *
 
-6. =
+6. = (comparison)
 
 7. dup
 
@@ -24,6 +25,22 @@ This project realise a comiler of language L_AC
 10. count
 
 11. type
+
+(optional)
+
+12. &&
+
+13. ||
+
+14. !
+
+15. <=
+
+16. defer
+
+17. recurse
+
 ##Follower
+
 - Hugo
 - Nicolas
