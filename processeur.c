@@ -358,9 +358,8 @@ do
 	else if(currtext[0]==';' && currtext[1]=='\0')
 	{
 		for(k=func_output_num-1;k>=0;k--)
-		{
 			pop(&func_output[k],temp_type_stack);
-		}
+		
 		func2LAC(func_name,func_input_num,func_input,func_output_num,func_output,NULL,1);
 
 		return 0;//no error
@@ -422,6 +421,16 @@ do
 	
 }
 
+void exit_processer()
+{
+	
+}
+
+int runtime()
+{
+
+}
+
 void processer(D_linklist* lex_list)
 {
 int func_LAC_pos,para_LAC_pos,return_LAC_pos,para_type,func_VM_pos;
@@ -435,9 +444,8 @@ do
 	currtext = lex_list->fence->content->value;
 	if(currtext[0]==':' && currtext[1]=='\0')
 	{
-		D_to_next(lex_list);
+		D_to_next(lex_list);//skip ':'
 		v_processer(lex_list);//define a function
-		processeur_state = 0;
 	}
 
 	currtext = lex_list->fence->content->value;
