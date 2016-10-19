@@ -102,6 +102,20 @@ int D_print_list(D_linklist* list)
 	return 1;
 }
 
+int Dlist_clear(D_linklist* list)
+{
+	list->fence = list->head;
+	list->tail = list->head;
+	list->pos = 0;
+	while(list->length > 0)
+	{
+		D_listnode *temp_n =list->head->next;
+		list->head->next = list->head->next->next;
+		list->length--;
+		free(temp_n);
+	}
+}
+
 /***********
 
 ***********/
