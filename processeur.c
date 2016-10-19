@@ -76,12 +76,23 @@ int pop(int* pnum,stack* i_stack)
 
 int stack_get_top(int* pnum,stack* i_stack)//get the top of stack
 {
-	if(i_stack->length>0)
+	if(i_stack->length > 0)
 	{
 		*pnum = i_stack->top->val;
 		return 1;
 	}
 	else return 0;
+}
+
+int stack_clear(stack* i_stack)
+{
+	while(i_stack->length > 0)
+	{
+		stack_node *temp_n = i_stack->top;
+		i_stack->top = i_stack->top->next;
+		i_stack->length--;
+		free(temp_n);
+	}
 }
 
 typedef void (*pfunc_base)(void);
@@ -105,14 +116,14 @@ int test_type(char *s);
 //0: fonction de base
 //1: user difined function
 //
-int func2LAC(char *func_base_str,int num_e,int *type_e,
+int func2LAC(int VM_pos,char *func_base_str,int num_e,int *type_e,
 		int num_s,int *type_s,pfunc_base f,int functype)
 {
 	int fun_len=0,begin=LAC_length;
 	int j=0;
 	//int flag=1;//whether LAC[] is long enought
-	if(functype == 0)
-	{
+//	if(functype == 0)
+//	{
 		LAC_length++;//skip first case
 		while(func_base_str[fun_len]!='\0')
 		{
@@ -126,14 +137,21 @@ int func2LAC(char *func_base_str,int num_e,int *type_e,
 		LAC[LAC_length++] = num_s;
 		for(j=0;j<num_s;j++) LAC[LAC_length++] = type_s[j];
 
-
+	if(functype == 0)
+	{
 		LAC[LAC_length++] = VM_length;
 		VM[VM_length++] = functype;
 		VM[VM_length++] = processeur_length;
 		processeur[processeur_length++] = f;
-		LAC[LAC_length++] = begin;
 	}
-	return 1;
+	else if(functype == 1)
+	{
+		LAC[LAC_length++] = VM_pos;
+	}
+
+	LAC[LAC_length++] = begin;
+//	}
+	return 0;
 }
 
 
@@ -151,7 +169,7 @@ void add()
 	int type_verfi=0;
 
 	if(pop(&process,retour))
-		push (process+1,retour);
+		push(process+1,retour);
 /*
 	v1 = pop(&t_aug1,type);
 	v2 = pop(&t_aug2,type);
@@ -239,6 +257,7 @@ void lit()//put a INT in stack
 	//{
 		push(INT,type);
 		push(VM[processer_pos+1],data);
+		printf("Test(lit):pushed %d\n",VM[processer_pos+1]);
 	//}
 	//else printf("[ERROR]: sementic fault, %s not a INT type\n",currtext);
 }
@@ -329,7 +348,10 @@ int v_processer(D_linklist* lex_list)
 	//valide function name
 	k=0;
 	while(currtext[k]!='\0')
-		func_name[k] = currtext[k++];
+	{
+		func_name[k] = currtext[k];
+		k++;
+	}
 	func_name[k] = '\0';
 	VM[VM_length++] = 1;//A function with right name
 
@@ -357,10 +379,11 @@ do
 	}
 	else if(currtext[0]==';' && currtext[1]=='\0')
 	{
+		VM[VM_length++] = 1;//add fin function
 		for(k=func_output_num-1;k>=0;k--)
 			pop(&func_output[k],temp_type_stack);
-		
-		func2LAC(func_name,func_input_num,func_input,func_output_num,func_output,NULL,1);
+		printf("Test(v_processer):function name is %s\n",func_name);	
+		func2LAC(VM_init_length,func_name,func_input_num,func_input,func_output_num,func_output,NULL,1);
 
 		return 0;//no error
 	}
@@ -394,7 +417,7 @@ do
 		{
 			push(LAC[return_LAC_pos+k+1],temp_type_stack);
 		}
-		VM[VM_length++] = func_VM_pos;
+		VM[VM_length++] = VM[func_VM_pos+1];
 
 	
 	}
@@ -507,10 +530,10 @@ do
 				while(stack_get_top(&VM_num,retour))
 				{
 					function = processeur[VM[VM_num]];
+					printf("Test(v_processer): execute VM pos %d\n",VM[VM_num]);
 					function();
-				
+				}	
 			}
-}
 		}
 
 	}
@@ -540,16 +563,16 @@ void init()
 
 	LAC[LAC_length++] = 0;
 
-	func2LAC("lit",0,inputval,0,outputval,lit,0);//Cfa = 0
-	func2LAC("fin",0,inputval,0,outputval,fin,0);//Cfa = 2
+	func2LAC(0,"lit",0,inputval,0,outputval,lit,0);//order = 0
+	func2LAC(0,"fin",0,inputval,0,outputval,fin,0);//order = 1 
 
 	inputval[0]=INT;inputval[1]=INT;
 	outputval[0]=INT;
-	func2LAC("+",2,inputval,1,outputval,add,0);
+	func2LAC(0,"+",2,inputval,1,outputval,add,0);
 
 	inputval[0]=INT;
 	outputval[0]=INT;
-	func2LAC(".",1,inputval,0,outputval,point,0);
+	func2LAC(0,".",1,inputval,0,outputval,point,0);
 
 
 }
@@ -570,11 +593,24 @@ int main(int argc, char* argv[])
 	printf("Test: VM:");
 	for(i=0;i<VM_length;i++) printf("%d ",VM[i]);
 	printf("\n");
+	
+	while(1)
+	{
+		printf(">>");
+		scanf("%99[^\n]",input_text);
+		getchar();
+		analex(input_text,ana_lex);
+		processer(ana_lex);
+		stack_clear(data);stack_clear(type);stack_clear(retour);
+		Dlist_clear(ana_lex);
 
-	printf(">>");
-	scanf("%99[^\n]",input_text);
-	analex(input_text,ana_lex);
-	processer(ana_lex);
 
+	printf("Test: LAC:");
+	for(i=0;i<LAC_length;i++) printf("%d ",LAC[i]);
+	printf("\n");
+	printf("Test: VM:");
+	for(i=0;i<VM_length;i++) printf("%d ",VM[i]);
+	printf("\n");
+	}	
 	return 0;
 }
