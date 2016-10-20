@@ -116,8 +116,8 @@ int test_type(char *s);
 //0: fonction de base
 //1: user difined function
 //
-int func2LAC(int VM_pos,char *func_base_str,int num_e,int *type_e,
-		int num_s,int *type_s,pfunc_base f,int functype)
+int func2LAC(int funcptpos,pfunc_base f,int VM_pos,char *func_base_str,
+		int num_e,int *type_e,int num_s,int *type_s)
 {
 	int fun_len=0,begin=LAC_length;
 	int j=0;
@@ -137,14 +137,21 @@ int func2LAC(int VM_pos,char *func_base_str,int num_e,int *type_e,
 		LAC[LAC_length++] = num_s;
 		for(j=0;j<num_s;j++) LAC[LAC_length++] = type_s[j];
 
-	if(functype == 0)
+	if(f != NULL)
 	{
 		LAC[LAC_length++] = VM_length;
-		VM[VM_length++] = functype;
-		VM[VM_length++] = processeur_length;
-		processeur[processeur_length++] = f;
+		VM[VM_length++] = 0;
+		if(processeur[funcptpos]==NULL)
+		{
+			VM[VM_length++] = funcptpos;
+			processeur[funcptpos] = f;
+		}
+		else 
+		{
+			printf("[ERROR](func2LAC): Basic function postion error in array processer\n");
+		}
 	}
-	else if(functype == 1)
+	else//function define in LAC 
 	{
 		LAC[LAC_length++] = VM_pos;
 	}
@@ -379,11 +386,12 @@ do
 	}
 	else if(currtext[0]==';' && currtext[1]=='\0')
 	{
-		VM[VM_length++] = 1;//add fin function
+		VM[VM_length++] = 2;//add fin function
 		for(k=func_output_num-1;k>=0;k--)
 			pop(&func_output[k],temp_type_stack);
-		printf("Test(v_processer):function name is %s\n",func_name);	
-		func2LAC(VM_init_length,func_name,func_input_num,func_input,func_output_num,func_output,NULL,1);
+		printf("Test(v_processer):function name is %s\n",func_name);
+		
+		func2LAC(-1,NULL,VM_init_length,func_name,func_input_num,func_input,func_output_num,func_output);
 
 		return 0;//no error
 	}
@@ -530,7 +538,7 @@ do
 				while(stack_get_top(&VM_num,retour))
 				{
 					function = processeur[VM[VM_num]];
-					printf("Test(v_processer): execute VM pos %d\n",VM[VM_num]);
+					printf("Test(processer): execute VM pos %d\n",VM[VM_num]);
 					function();
 				}	
 			}
@@ -560,19 +568,26 @@ void init()
 	VM_length = 0;
 	LAC_length = 0;
 	int inputval[10],outputval[10];
+	int k=0;
 
 	LAC[LAC_length++] = 0;
+	for(k=0;k<PROCESSEUR_LENGTH-1;k++)
+		processeur[k] = NULL;
 
-	func2LAC(0,"lit",0,inputval,0,outputval,lit,0);//order = 0
-	func2LAC(0,"fin",0,inputval,0,outputval,fin,0);//order = 1 
-
-	inputval[0]=INT;inputval[1]=INT;
-	outputval[0]=INT;
-	func2LAC(0,"+",2,inputval,1,outputval,add,0);
+//int func2LAC(int funcptpos,pfunc_base f,int VM_pos,char *func_base_str,
+//		int num_e,int *type_e,int num_s,int *type_s)
+	func2LAC(0,lit,-1,"lit",0,inputval,0,outputval);//order = 0
+	//func2LAC(1,str,-1,"str",0,inputval,0,outputval);
+	func2LAC(2,fin,-1,"fin",0,inputval,0,outputval);//order = 1 
 
 	inputval[0]=INT;
 	outputval[0]=INT;
-	func2LAC(0,".",1,inputval,0,outputval,point,0);
+	func2LAC(13,point,-1,".",1,inputval,0,outputval);
+	
+	inputval[0]=INT;inputval[1]=INT;
+	outputval[0]=INT;
+	func2LAC(14,add,-1,"+",2,inputval,1,outputval);
+
 
 
 }
