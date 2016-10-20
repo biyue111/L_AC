@@ -8,7 +8,7 @@ This project realise a comiler of language L_AC
 
 2. fin
 
-3. :
+3. 
 
 4. 
 
@@ -48,7 +48,11 @@ This project realise a comiler of language L_AC
 
 25. then
 
-26. && (optional functions from now on)
+26. : (optional functions from now on)
+
+27. ;
+
+28. && 
 
 27. ||
 
