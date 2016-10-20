@@ -8,47 +8,65 @@ This project realise a comiler of language L_AC
 
 2. fin
 
-3. .
+3. 
 
-4. +
+4. 
 
-5. \-
+5. 
 
-6. *
+6. 
 
-7. = (comparison)
+7. 
 
-8. dup
+8. 
 
-9. drop
+9. 
 
-10. swap
+13. .
 
-11. count
+14. +
 
-12. type
+15. \-
 
-13. if
+16. *
 
-13. else
+17. = (comparison)
 
-14. then
+18. dup
 
-12. && (optional functions from now on)
+19. drop
 
-13. ||
+20. swap
 
-14. !
+21. count
 
-15. <=
+22. type
 
-16. defer
+23. if
 
-17. recurse
+24. else
 
-18. '
+25. then
 
-19. is
+26. : (optional functions from now on)
+
+27. ;
+
+28. && 
+
+27. ||
+
+28. !
+
+29. <=
+
+30. defer
+
+31. recurse
+
+32. '
+
+33. is
 ##Follower
 
 - Hugo
