@@ -222,7 +222,38 @@ void equal(){
 
 void LAC_if(){
 	int process;
-//	int 
+	int aug1;
+
+	pop(&aug1,data);
+	if(pop(&process,retour))
+		if(aug1)//if true
+			push(process+2,retour);
+		else
+			push(process+VM[process+1]+1,retour);
+	
+	else
+		printf("[ERROR](if): Try to use if in calculator mode");
+}
+
+void LAC_else(){
+	int process;
+	//only in condition <iftrue> we will meet else function
+	if(pop(&process,retour))
+		push(process+VM[process+1]+1,retour);
+	
+	else
+		printf("[ERROR](else): Try to use if in calculator mode");
+}
+
+void LAC_then(){
+	int process;
+	//only in condition <iftrue> we will meet else function
+	if(pop(&process,retour))
+		push(process+1,retour);
+	
+	else
+		printf("[ERROR](then): Try to use if in calculator mode");
+
 }
 
 /*
@@ -390,13 +421,14 @@ do
 		}
 		VM[VM_length++] = func_VM_pos;
 		//if condition statement
-		if(currtext == "if")
+		if(ifstrcmp(currtext,"if") == 0)
 		{
 			VM_length++;//leave the space in VM for condition jump
 			push(VM_length,condition_stack);
 		}
-		else if(currtext == "else")
+		else if(strcmp(currtext,"else") == 0)
 		{
+			processeur_state = CON_ELSE;
 			VM_length++;
 			int con_pos;
 			//find the postion of "if"
@@ -405,8 +437,9 @@ do
 			push(VM_length,condition_stack);
 
 		}
-		else if(currtext == "then")
+		else if(strcmp(currtext,"then") == 0)
 		{
+			processeur_state = MODE_COMPILER;
 			int con_pos;
 			pop(&con_pos,condition_stack);
 			VM[con_pos] = VM_length;
