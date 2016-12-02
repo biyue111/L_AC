@@ -152,6 +152,78 @@ int add_rightchild()
 {
 
 }
+/*************
+*************/
+
+typedef struct stack_node{
+	int val;
+	struct stack_node *next;
+}stack_node;
+
+typedef struct stack{
+	stack_node *top;
+	int length;
+}stack;
+
+stack_node* create_stack_node(int num)
+{
+	stack_node *sn = (stack_node*)malloc(sizeof(stack_node));
+	sn->val = num;
+	sn->next = NULL;
+	return sn;
+}
+
+stack* create_stack()
+{
+	stack *s = (stack*)malloc(sizeof(stack));
+	s->top = NULL;
+	s->length = 0;
+	return s;
+}
+
+int push(int num,stack* i_stack)
+{
+	stack_node *temp_n = create_stack_node(num);
+	temp_n->next = i_stack->top;
+	i_stack->top = temp_n;
+	(i_stack->length)++;
+	return 1;
+}
+
+int pop(int* pnum,stack* i_stack)
+{
+	if(i_stack->length>0)
+	{
+		*pnum = i_stack->top->val;
+		stack_node *torel = i_stack->top;
+		i_stack->top = i_stack->top->next;
+		free(torel);
+		(i_stack->length)--;
+		return 1;
+	}
+	else return 0;
+}
+
+int stack_get_top(int* pnum,stack* i_stack)//get the top of stack
+{
+	if(i_stack->length > 0)
+	{
+		*pnum = i_stack->top->val;
+		return 1;
+	}
+	else return 0;
+}
+
+int stack_clear(stack* i_stack)
+{
+	while(i_stack->length > 0)
+	{
+		stack_node *temp_n = i_stack->top;
+		i_stack->top = i_stack->top->next;
+		i_stack->length--;
+		free(temp_n);
+	}
+}
 
 #endif
 

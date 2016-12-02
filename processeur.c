@@ -24,76 +24,10 @@
 
 //#define NDEFTYPE 0
 //#define CUS_INT 1
-
-typedef struct stack_node{
-	int val;
-	struct stack_node *next;
-}stack_node;
-
-typedef struct stack{
-	stack_node *top;
-	int length;
-}stack;
-
-stack_node* create_stack_node(int num)
-{
-	stack_node *sn = (stack_node*)malloc(sizeof(stack_node));
-	sn->val = num;
-	sn->next = NULL;
-	return sn;
-}
-
-stack* create_stack()
-{
-	stack *s = (stack*)malloc(sizeof(stack));
-	s->top = NULL;
-	s->length = 0;
-	return s;
-}
-
-int push(int num,stack* i_stack)
-{
-	stack_node *temp_n = create_stack_node(num);
-	temp_n->next = i_stack->top;
-	i_stack->top = temp_n;
-	(i_stack->length)++;
-	return 1;
-}
-
-int pop(int* pnum,stack* i_stack)
-{
-	if(i_stack->length>0)
-	{
-		*pnum = i_stack->top->val;
-		stack_node *torel = i_stack->top;
-		i_stack->top = i_stack->top->next;
-		free(torel);
-		(i_stack->length)--;
-		return 1;
-	}
-	else return 0;
-}
-
-int stack_get_top(int* pnum,stack* i_stack)//get the top of stack
-{
-	if(i_stack->length > 0)
-	{
-		*pnum = i_stack->top->val;
-		return 1;
-	}
-	else return 0;
-}
-
-int stack_clear(stack* i_stack)
-{
-	while(i_stack->length > 0)
-	{
-		stack_node *temp_n = i_stack->top;
-		i_stack->top = i_stack->top->next;
-		i_stack->length--;
-		free(temp_n);
-	}
-}
+//processeur_state
+#define MODE_CALCULATER 0
+#define MODE_COMPILER 1
+#define CON_ELSE 2
 
 typedef void (*pfunc_base)(void);
 
@@ -166,7 +100,35 @@ int complie()
 {
 	
 }
+/*******************
+* fonction de base
+*******************/
+void fin()
+{
+	int process;
+	pop(&process,retour);
+	//move the processer for user-defiend
+	if(pop(&process,retour))
+		push(process + 1, retour);
+}
 
+void lit()//put a INT in stack
+{
+	int processer_pos;
+	int var_type=0;
+
+	pop(&processer_pos,retour);
+	push(processer_pos+2,retour);
+	
+	//var_type = test_type(VM[processer_pos+1]);
+	//if(var_type == INT)
+	//{
+		push(INT,type);
+		push(VM[processer_pos+1],data);
+		printf("Test(lit):pushed %d\n",VM[processer_pos+1]);
+	//}
+	//else printf("[ERROR]: sementic fault, %s not a INT type\n",currtext);
+}
 void add()
 {
 	int process;
@@ -244,34 +206,28 @@ void point()
 		printf("%d\n",aug1);
 //	}
 }
-
-void fin()
-{
+void equal(){
 	int process;
-	pop(&process,retour);
+	int aug1,aug2;
+	int v1;
+	int type_verfi=0;
+
+	if(pop(&process,retour))
+		push (process+1,retour);
+
+	pop(&aug1,data);
+	pop(&aug2,data);
+	push(aug1 == aug2, data);
 }
 
-void lit()//put a INT in stack
-{
-	int processer_pos;
-	int var_type=0;
-
-	pop(&processer_pos,retour);
-	push(processer_pos+2,retour);
-	
-	//var_type = test_type(VM[processer_pos+1]);
-	//if(var_type == INT)
-	//{
-		push(INT,type);
-		push(VM[processer_pos+1],data);
-		printf("Test(lit):pushed %d\n",VM[processer_pos+1]);
-	//}
-	//else printf("[ERROR]: sementic fault, %s not a INT type\n",currtext);
+void LAC_if(){
+	int process;
+//	int 
 }
 
 /*
 void two_point()
-/*Let function processeur call v_prosseur 
+*Let function processeur call v_prosseur 
 * in the next loop
 {
 	processeur_state = 1;
@@ -294,8 +250,10 @@ int test_func(char* s,int *LAC_pos)
 			for(k=0;k<s_length;k++)
 			{
 				if(s[k]!=LAC[pos+k+1])
-				flag = 0;
-				break;
+				{
+					flag = 0;
+					break;
+				}
 			}
 			if(flag)
 			{
@@ -313,16 +271,19 @@ int test_func(char* s,int *LAC_pos)
 int test_type(char *s)
 {
 	int k=0;
-	if(isdigit(s[0]))	return INT;
+	if(isdigit(s[0]))	
+		return INT;
 }
 
 int v_processer(D_linklist* lex_list)
-{
+{//mode de compilateur
 	int func_input_num=0,func_output_num=0;
 	int func_input[10],func_output[10];
 	stack *temp_data_stack,*temp_type_stack;
+	stack *condition_stack;
 	temp_data_stack = create_stack();
 	temp_type_stack = create_stack();
+	condition_stack = create_stack();
 	int para_type,var_type;
 	int flag=1;
 	//if an Error detected, rewrite VM to initial length
@@ -385,12 +346,14 @@ do
 		return 3;//test un error
 	}
 	else if(currtext[0]==';' && currtext[1]=='\0')
-	{
+	{//right defined user function
 		VM[VM_length++] = 2;//add fin function
+		func_output_num = temp_type_stack->length;
 		for(k=func_output_num-1;k>=0;k--)
 			pop(&func_output[k],temp_type_stack);
 		printf("Test(v_processer):function name is %s\n",func_name);
-		
+		//add user function to LAC and VM
+		//funcpos is -1, which will not be used in func2LAC becasue of NULL finction pt
 		func2LAC(-1,NULL,VM_init_length,func_name,func_input_num,func_input,func_output_num,func_output);
 
 		return 0;//no error
@@ -399,10 +362,10 @@ do
 	if(test_func(currtext,&func_LAC_pos))
 	{
 		para_LAC_pos = func_LAC_pos + 1 + LAC[func_LAC_pos];
-		return_LAC_pos = para_LAC_pos+1+LAC[para_LAC_pos];
+		return_LAC_pos = para_LAC_pos + 1 + LAC[para_LAC_pos];
+		func_VM_pos = LAC[return_LAC_pos + 1 + LAC[return_LAC_pos]];//Cfa of function
 
 		printf("Test(v_processer): func_LAC_pos:%d, re:%d\n",func_LAC_pos, return_LAC_pos);
-		func_VM_pos = LAC[return_LAC_pos+1+LAC[return_LAC_pos]];
 
 		//test type of parameter
 		for(k=0;k<LAC[para_LAC_pos];k++)
@@ -425,7 +388,29 @@ do
 		{
 			push(LAC[return_LAC_pos+k+1],temp_type_stack);
 		}
-		VM[VM_length++] = VM[func_VM_pos+1];
+		VM[VM_length++] = func_VM_pos;
+		//if condition statement
+		if(currtext == "if")
+		{
+			VM_length++;//leave the space in VM for condition jump
+			push(VM_length,condition_stack);
+		}
+		else if(currtext == "else")
+		{
+			VM_length++;
+			int con_pos;
+			//find the postion of "if"
+			pop(&con_pos,condition_stack);
+			VM[con_pos] = VM_length;
+			push(VM_length,condition_stack);
+
+		}
+		else if(currtext == "then")
+		{
+			int con_pos;
+			pop(&con_pos,condition_stack);
+			VM[con_pos] = VM_length;
+		}
 
 	
 	}
@@ -463,7 +448,7 @@ int runtime()
 }
 
 void processer(D_linklist* lex_list)
-{
+{//mode de calculatrice
 int func_LAC_pos,para_LAC_pos,return_LAC_pos,para_type,func_VM_pos;
 pfunc_base function;
 int var_type;
@@ -493,9 +478,10 @@ do
 	{
 		para_LAC_pos = func_LAC_pos + 1 + LAC[func_LAC_pos];
 		return_LAC_pos = para_LAC_pos + 1 + LAC[para_LAC_pos];
-
-		printf("Test(processer): func_LAC_pos:%d, re:%d\n",func_LAC_pos, return_LAC_pos);
 		func_VM_pos = LAC[return_LAC_pos + 1 + LAC[return_LAC_pos]];
+
+		printf("Test(processer): func_LAC_pos:%d, parameter:%d, return:%d, VM_pos:%d\n",
+			func_LAC_pos, para_LAC_pos, return_LAC_pos, func_VM_pos);
 
 		//test type of parameter
 
@@ -518,7 +504,7 @@ do
 			}
 		}
 
-		if(type_test_flag)
+		if(type_test_flag)//if function has right input type
 		{
 			for(k=0;k<LAC[return_LAC_pos];k++)
 			{
@@ -532,15 +518,30 @@ do
 				function();
 			}
 			else if(VM[func_VM_pos]==1)//fonction defini en LAC
-			{
-				int VM_num;
-				push(func_VM_pos+1,retour);
-				while(stack_get_top(&VM_num,retour))
+			{//begin runtime mode
+				int VM_processer;//the position of the processer in VM
+				push(func_VM_pos + 1,retour);
+				while(stack_get_top(&VM_processer,retour))
 				{
-					function = processeur[VM[VM_num]];
-					printf("Test(processer): execute VM pos %d\n",VM[VM_num]);
-					function();
-				}	
+					if(VM[VM[VM_processer]] == 0) // if basic function
+					{
+						function = processeur[VM[VM[VM_processer] + 1]];
+						printf("Test(processer): execute VM pos %d\n",VM[VM_processer + 1]);
+						function();
+					}
+					else if(VM[VM[VM_processer]] == 1)
+					{
+						//int temp;
+						//pop(&temp,retour);
+						//push(temp + 1,retour);
+						push(VM[VM_processer] + 1,retour);
+					}
+					else
+					{
+						printf("[ERROR](processeur):wrong VM_number %d.\n", VM_processer);
+						exit(0);
+					}
+				}
 			}
 		}
 
@@ -587,7 +588,10 @@ void init()
 	inputval[0]=INT;inputval[1]=INT;
 	outputval[0]=INT;
 	func2LAC(14,add,-1,"+",2,inputval,1,outputval);
-
+	
+	inputval[0]=INT;inputval[1]=INT;
+	outputval[0]=INT;
+	func2LAC(17,equal,-1,"=",2,inputval,1,outputval);
 
 
 }
