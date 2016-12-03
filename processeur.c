@@ -229,7 +229,7 @@ void LAC_if(){
 		if(aug1)//if true
 			push(process+2,retour);
 		else
-			push(process+VM[process+1]+1,retour);
+			push(VM[process+1] + 1,retour);
 	
 	else
 		printf("[ERROR](if): Try to use if in calculator mode");
@@ -239,7 +239,7 @@ void LAC_else(){
 	int process;
 	//only in condition <iftrue> we will meet else function
 	if(pop(&process,retour))
-		push(process+VM[process+1]+1,retour);
+		push(VM[process+1],retour);
 	
 	else
 		printf("[ERROR](else): Try to use if in calculator mode");
@@ -308,6 +308,7 @@ int test_type(char *s)
 
 int v_processer(D_linklist* lex_list)
 {//mode de compilateur
+	processeur_state = MODE_COMPILER;
 	int func_input_num=0,func_output_num=0;
 	int func_input[10],func_output[10];
 	stack *temp_data_stack,*temp_type_stack;
@@ -401,6 +402,11 @@ do
 		//test type of parameter
 		for(k=0;k<LAC[para_LAC_pos];k++)
 		{
+			if(processeur_state == CON_ELSE)
+			{
+				printf("Test(v_processeur):ignore input, In CON_ELSE\n");
+				break;//no nned to when in else branch
+			}
 			if(pop(&para_type,temp_type_stack))
 			{
 				if(para_type!=LAC[para_LAC_pos+k+1])
@@ -415,26 +421,34 @@ do
 				func_input[func_input_num++] = LAC[para_LAC_pos+k+1];
 			}
 		}
+		//add output
 		for(k=0;k<LAC[return_LAC_pos];k++)	
 		{
+			if(processeur_state == CON_ELSE)
+			{
+				printf("Test(v_processeur):ignore output In CON_ELSE\n");
+				break;//no nned to when in else branch
+			}
 			push(LAC[return_LAC_pos+k+1],temp_type_stack);
 		}
 		VM[VM_length++] = func_VM_pos;
 		//if condition statement
-		if(ifstrcmp(currtext,"if") == 0)
+		if(strcmp(currtext,"if") == 0)
 		{
-			VM_length++;//leave the space in VM for condition jump
 			push(VM_length,condition_stack);
+			VM_length++;//leave the space in VM for condition jump
 		}
 		else if(strcmp(currtext,"else") == 0)
 		{
 			processeur_state = CON_ELSE;
-			VM_length++;
 			int con_pos;
 			//find the postion of "if"
 			pop(&con_pos,condition_stack);
 			VM[con_pos] = VM_length;
+			printf("Test(v_processeur):find else and write else's postion %d to if'position %d\n",
+				VM_length,con_pos);
 			push(VM_length,condition_stack);
+			VM_length++;
 
 		}
 		else if(strcmp(currtext,"then") == 0)
@@ -443,6 +457,8 @@ do
 			int con_pos;
 			pop(&con_pos,condition_stack);
 			VM[con_pos] = VM_length;
+			//there is must a function after then
+			//e.g. fin
 		}
 
 	
@@ -452,7 +468,8 @@ do
 		var_type = test_type(currtext);
 		if(var_type == INT)
 		{
-			push(INT,temp_type_stack);
+			if(processeur_state != CON_ELSE)
+				push(INT,temp_type_stack);
 			VM[VM_length++] = 0;//function lit
 			VM[VM_length++] = atoi(currtext);
 			printf("Test(v_processer):add %s in VM\n",currtext);
@@ -489,6 +506,7 @@ int k=0;
 int type_test_flag=1;
 int error_rep;
 if(!D_to_begin(lex_list)) return;//list empty
+processeur_state = MODE_CALCULATER;
 do
 {
 	currtext = lex_list->fence->content->value;
@@ -497,6 +515,7 @@ do
 		D_to_next(lex_list);//skip ':'
 		printf("Test(processer):enter v_processer:\n");
 		error_rep = v_processer(lex_list);//define a function
+		processeur_state = MODE_CALCULATER;
 		if(!error_rep)
 		{
 			printf("Test(processer):Defined the function\n");
@@ -559,7 +578,7 @@ do
 					if(VM[VM[VM_processer]] == 0) // if basic function
 					{
 						function = processeur[VM[VM[VM_processer] + 1]];
-						printf("Test(processer): execute VM pos %d\n",VM[VM_processer + 1]);
+						printf("Test(processer): execute VM pos %d\n",VM[VM_processer]);
 						function();
 					}
 					else if(VM[VM[VM_processer]] == 1)
@@ -626,7 +645,12 @@ void init()
 	outputval[0]=INT;
 	func2LAC(17,equal,-1,"=",2,inputval,1,outputval);
 
+	inputval[0]=INT;
+	func2LAC(23,LAC_if,-1,"if",1,inputval,0,outputval);
 
+	func2LAC(24,LAC_else,-1,"else",0,inputval,0,outputval);
+
+	func2LAC(25,LAC_then,-1,"then",0,inputval,0,outputval);
 }
 
 int main(int argc, char* argv[])
