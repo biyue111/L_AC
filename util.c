@@ -214,6 +214,29 @@ int stack_get_top(int* pnum,stack* i_stack)//get the top of stack
 	else return 0;
 }
 
+int stack_compare(stack *s1, stack *s2)
+{
+
+	printf("Test(stack_compare):length%d %d\n",s1->length,s2->length);
+
+	if(s1->length != s2->length)
+		return 0;
+	stack_node *n1, *n2;
+	n1 = s1->top;
+	n2 = s2->top;
+	while(n1 != NULL)
+	{
+		if(n1->val != n2->val)
+		{
+			printf("Test(stack_compare):%d %d\n",n1->val,n2->val);
+			return 0;
+		}
+		n1 = n1->next;
+		n2 = n2->next;
+	}
+	return 1;
+}
+
 int stack_clear(stack* i_stack)
 {
 	while(i_stack->length > 0)
@@ -225,5 +248,153 @@ int stack_clear(stack* i_stack)
 	}
 }
 
+/*************
+* the stack for int array
+*************/
+typedef struct a_stack_node{
+	int a[10];
+	struct a_stack_node *next;
+}a_stack_node;
+
+typedef struct a_stack{
+	a_stack_node *top;
+	int length;
+}a_stack;
+
+a_stack_node* create_a_stack_node(int (*i_a)) 
+{
+	a_stack_node *sn = (a_stack_node*)malloc(sizeof(a_stack_node));
+	int i;
+	for(i=0;i<10;i++)
+		sn->a[i] = i_a[i];
+	sn->next = NULL;
+	return sn;
+}
+
+a_stack* create_a_stack()
+{
+	a_stack *s = (a_stack*)malloc(sizeof(a_stack));
+	s->top = NULL;
+	s->length = 0;
+	return s;
+}
+
+int a_push(int (*a) ,a_stack* i_stack)
+{
+	a_stack_node *temp_n = create_a_stack_node(a);
+	temp_n->next = i_stack->top;
+	i_stack->top = temp_n;
+	(i_stack->length)++;
+	return 1;
+}
+
+int a_pop(int (*p_a) ,a_stack* i_stack)
+{
+	if(i_stack->length>0)
+	{
+		int i = 0;
+		for(i=0;i<10;i++)
+			p_a[i] = i_stack->top->a[i];
+		a_stack_node *torel = i_stack->top;
+		i_stack->top = i_stack->top->next;
+		free(torel);
+		(i_stack->length)--;
+		return 1;
+	}
+	else return 0;
+}
+
+int a_stack_get_top(int (*p_a) ,a_stack* i_stack)//get the top of stack
+{
+	if(i_stack->length > 0)
+	{
+		p_a = i_stack->top->a;
+		return 1;
+	}
+	else return 0;
+}
+
+int a_stack_clear(a_stack* i_stack)
+{
+	while(i_stack->length > 0)
+	{
+		a_stack_node *temp_n = i_stack->top;
+		i_stack->top = i_stack->top->next;
+		i_stack->length--;
+		free(temp_n);
+	}
+}
+/*********
+*********/
+typedef struct s_stack_node{
+	stack *s;
+	struct s_stack_node *next;
+}s_stack_node;
+
+typedef struct s_stack{
+	s_stack_node *top;
+	int length;
+}s_stack;
+
+s_stack_node* create_s_stack_node(stack *i_s)
+{
+	s_stack_node *sn = (s_stack_node*)malloc(sizeof(s_stack_node));
+	sn->s = create_stack();
+	memcpy(sn->s,i_s,sizeof(stack));
+	sn->next = NULL;
+	return sn;
+}
+
+s_stack* create_s_stack()
+{
+	s_stack *s = (s_stack*)malloc(sizeof(s_stack));
+	s->top = NULL;
+	s->length = 0;
+	return s;
+}
+
+int s_push(stack *i_s,s_stack* i_stack)
+{
+	s_stack_node *temp_n = create_s_stack_node(i_s);
+	temp_n->next = i_stack->top;
+	i_stack->top = temp_n;
+	(i_stack->length)++;
+	return 1;
+}
+
+int s_pop(stack *p_s,s_stack* i_stack)
+{
+	if(i_stack->length>0)
+	{
+		memcpy(p_s,i_stack->top->s,sizeof(stack));
+		s_stack_node *torel = i_stack->top;
+		i_stack->top = i_stack->top->next;
+		free(torel);
+		(i_stack->length)--;
+		return 1;
+	}
+	else return 0;
+}
+
+int s_stack_get_top(stack *p_s,s_stack* i_stack)//get the top of stack
+{
+	if(i_stack->length > 0)
+	{
+		p_s = i_stack->top->s;
+		return 1;
+	}
+	else return 0;
+}
+
+int s_stack_clear(s_stack* i_stack)
+{
+	while(i_stack->length > 0)
+	{
+		s_stack_node *temp_n = i_stack->top;
+		i_stack->top = i_stack->top->next;
+		i_stack->length--;
+		free(temp_n);
+	}
+}
 #endif
 

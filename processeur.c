@@ -16,7 +16,7 @@
 * In when meet a funcion, the first parameter of the 
 * function is the top value in data stack...
 *************************/
-
+#define PROCESSEUR_DEBUG
 #define FUNC_BASE_NUM 9
 #define LAC_LENGTH 500
 #define VM_LENGTH 100
@@ -311,13 +311,31 @@ int v_processer(D_linklist* lex_list)
 	processeur_state = MODE_COMPILER;
 	int func_input_num=0,func_output_num=0;
 	int func_input[10],func_output[10];
+	int m=0;
+	for(m=0;m<10;m++)
+	{
+		func_input[m] = -1;
+		func_output[m] = -1;
+	}
 	stack *temp_data_stack,*temp_type_stack;
-	stack *condition_stack;
+	stack *condition_stack;//record the level of condition
+	//record the temps_data_stack 
+	//when enter if
+	s_stack *if_type_s_stack;	
+	a_stack *func_input_a_stack;
+	stack *func_input_num_stack;
+	//stack *condition_type_stack;
 	temp_data_stack = create_stack();
 	temp_type_stack = create_stack();
 	condition_stack = create_stack();
+	if_type_s_stack = create_s_stack();
+	func_input_a_stack = create_a_stack();
+	func_input_num_stack = create_stack();
+	//if_stack = create_array_stack();
+	//else_stack = create_array_stack();
 	int para_type,var_type;
-	int flag=1;
+	int type_flag=1;
+	int condition_flag=1;
 	//if an Error detected, rewrite VM to initial length
 	int VM_init_length = VM_length;
 
@@ -365,9 +383,15 @@ int v_processer(D_linklist* lex_list)
 do
 {
 	currtext = lex_list->fence->content->value;
-	if(!flag)
+	if(!type_flag)
 	{
 		printf("[ERROR](v_processer): sementic fault, wrong type\n");
+		VM_length = VM_init_length;
+		return 2;//test un error
+	}
+	if(!condition_flag)
+	{
+		printf("[ERROR](v_processer): sementic fault, condition branchs not much\n");
 		VM_length = VM_init_length;
 		return 2;//test un error
 	}
@@ -398,21 +422,22 @@ do
 		func_VM_pos = LAC[return_LAC_pos + 1 + LAC[return_LAC_pos]];//Cfa of function
 
 		printf("Test(v_processer): func_LAC_pos:%d, re:%d\n",func_LAC_pos, return_LAC_pos);
-
 		//test type of parameter
 		for(k=0;k<LAC[para_LAC_pos];k++)
 		{
-			if(processeur_state == CON_ELSE)
-			{
-				printf("Test(v_processeur):ignore input, In CON_ELSE\n");
-				break;//no nned to when in else branch
-			}
+			//if(processeur_state == CON_ELSE)
+			//{
+			//	printf("Test(v_processeur):ignore input, In CON_ELSE\n");
+			//	break;//no nned to when in else branch
+			//}
 			if(pop(&para_type,temp_type_stack))
 			{
+				int t_type;
+				pop(&t_type, temp_type_stack);
 				if(para_type!=LAC[para_LAC_pos+k+1])
 				//find wrong type
 				{
-					flag = 0;			
+					type_flag = 0;			
 					break;
 				}
 			}
@@ -424,19 +449,27 @@ do
 		//add output
 		for(k=0;k<LAC[return_LAC_pos];k++)	
 		{
-			if(processeur_state == CON_ELSE)
-			{
-				printf("Test(v_processeur):ignore output In CON_ELSE\n");
-				break;//no nned to when in else branch
-			}
+			//if(processeur_state == CON_ELSE)
+			//{
+			//	printf("Test(v_processeur):ignore output In CON_ELSE\n");
+			//	break;//no nned to when in else branch
+			//}
 			push(LAC[return_LAC_pos+k+1],temp_type_stack);
+			//push(LAC[return_LAC_pos+k+1],condition_type_stack);
 		}
 		VM[VM_length++] = func_VM_pos;
 		//if condition statement
 		if(strcmp(currtext,"if") == 0)
 		{
+			printf("Test(v_processeur):find if\n");
 			push(VM_length,condition_stack);
 			VM_length++;//leave the space in VM for condition jump
+#ifdef PROCESSEUR_DEBUG
+#endif
+			s_push(temp_type_stack, if_type_s_stack);//push the before-if type state
+			a_push(func_input, func_input_a_stack);
+			push(func_input_num, func_input_num_stack);
+			
 		}
 		else if(strcmp(currtext,"else") == 0)
 		{
@@ -449,6 +482,27 @@ do
 				VM_length,con_pos);
 			push(VM_length,condition_stack);
 			VM_length++;
+			stack *temp_s = create_stack();
+			int temp_func_input[10];
+			int temp_func_num;
+		printf("TEST\n");
+			s_pop(temp_s, if_type_s_stack);
+			a_pop(temp_func_input, func_input_a_stack);
+			pop(&temp_func_num,func_input_num_stack);
+		printf("TEST\n");
+			s_push(temp_type_stack, if_type_s_stack);
+			a_push(func_input, func_input_a_stack);
+			push(func_input_num, func_input_num_stack);
+			temp_type_stack = temp_s;//reuse the state just before if
+			func_input_num = temp_func_num;
+			int n;
+			for(n=0;n<10;n++)
+			{
+				func_input[n] = temp_func_input[n];
+				printf("%d ",func_input[n]);
+			}
+			printf("\n");
+			printf("%d\n", func_input_num);
 
 		}
 		else if(strcmp(currtext,"then") == 0)
@@ -459,6 +513,29 @@ do
 			VM[con_pos] = VM_length;
 			//there is must a function after then
 			//e.g. fin
+			stack *temp_aif_stack = create_stack();//the correspond state of after-if
+			int temp_func_input[10];
+			int temp_func_num;
+			s_pop(temp_aif_stack,if_type_s_stack);
+			a_pop(temp_func_input, func_input_a_stack);
+			pop(&temp_func_num,func_input_num_stack);
+			if(!stack_compare(temp_aif_stack,temp_type_stack))
+			{
+#ifdef PROCESSEUR_DEBUG
+				printf("Test(v_processeur):two branch diff stack\n");
+#endif
+				condition_flag = 0;//can match
+			}	
+			int i;
+			for(i=0;i<func_input_num;i++)
+			{
+				if(func_input[i] != temp_func_input[i])
+					condition_flag = 0;
+#ifdef PROCESSEUR_DEBUG
+				printf("Test(v_processeur):two branch:%d %d\n",
+					func_input[i], temp_func_input[i]);
+#endif
+			}
 		}
 
 	
@@ -468,8 +545,8 @@ do
 		var_type = test_type(currtext);
 		if(var_type == INT)
 		{
-			if(processeur_state != CON_ELSE)
-				push(INT,temp_type_stack);
+			//if(processeur_state != CON_ELSE)
+			push(INT,temp_type_stack);
 			VM[VM_length++] = 0;//function lit
 			VM[VM_length++] = atoi(currtext);
 			printf("Test(v_processer):add %s in VM\n",currtext);
