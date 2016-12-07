@@ -21,6 +21,7 @@
 #define LAC_LENGTH 500
 #define VM_LENGTH 100
 #define PROCESSEUR_LENGTH 50
+#define CHAIN_MEMORY_SIZE 1000
 
 //#define NDEFTYPE 0
 //#define CUS_INT 1
@@ -28,6 +29,7 @@
 #define MODE_CALCULATER 0
 #define MODE_COMPILER 1
 #define CON_ELSE 2
+
 
 typedef void (*pfunc_base)(void);
 
@@ -42,6 +44,8 @@ int state;
 int input_pos;//position read the result of analyse syn
 stack* data,*type,*retour;
 char *currtext;
+char chain_memory[CHAIN_MEMORY_SIZE];
+int chain_memory_length;
 
 int test_type(char *s);
 
@@ -110,6 +114,10 @@ void fin()
 	//move the processer for user-defiend
 	if(pop(&process,retour))
 		push(process + 1, retour);
+}
+void str()
+{
+
 }
 
 void lit()//put a INT in stack
@@ -206,7 +214,39 @@ void point()
 		printf("%d\n",aug1);
 //	}
 }
-void equal(){
+
+void count()
+{
+	int chain_add;
+	int chain_len;
+	int process;
+	if(pop(&process,retour))
+		push (process+1,retour);
+		
+	pop(&chain_add,data);
+	chain_len = chain_memory[chain_add];
+	chain_add++;
+	push(chain_add,data);
+	push(chain_len,data);
+}
+
+void func_type()
+{
+	int chain_add;
+	int chain_len;
+	int process;
+	if(pop(&process,retour))
+		push (process+1,retour);
+	pop(&chain_len,data);
+	pop(&chain_add,data);
+	int i=0;
+	for(i=0;i<chain_len;i++)
+		printf("%c",chain_memory[chain_add+i]);
+	printf("\n");
+}
+
+void equal()
+{
 	int process;
 	int aug1,aug2;
 	int v1;
@@ -277,7 +317,9 @@ int test_func(char* s,int *LAC_pos)
 		flag = 1;
 		if(s_length==LAC[pos])//length much
 		{
+#ifdef PROCESSEUR_DEBUG
 			printf("Test: length much at %d\n",pos);
+#endif
 			for(k=0;k<s_length;k++)
 			{
 				if(s[k]!=LAC[pos+k+1])
@@ -288,13 +330,17 @@ int test_func(char* s,int *LAC_pos)
 			}
 			if(flag)
 			{
+#ifdef PROCESSEUR_DEBUG
 				printf("Test: find function %s\n",s);
+#endif
 				*LAC_pos = pos;
 				return 1;
 			}
 		}
 	}
+#ifdef PROCESSEUR_DEBUG
 	printf("Test: NOT find function %s\n",s);
+#endif
 	return 0;//not find the function
 	
 }
@@ -302,8 +348,20 @@ int test_func(char* s,int *LAC_pos)
 int test_type(char *s)
 {
 	int k=0;
+	int s_length = 0;
+	int type;
+	while(s[s_length]!='\0')
+		s_length++;
 	if(isdigit(s[0]))	
-		return INT;
+		type = INT;
+	else if(s[0] == '"' && s[s_length-1]=='"')
+		type = CHAIN;
+	else
+		type = UNDEF;//other type
+#ifdef PROCESSEUR_DEBUG
+	printf("Test(test_type):find type:%d\n",type);
+#endif
+	return type;
 }
 
 int v_processer(D_linklist* lex_list)
@@ -464,8 +522,6 @@ do
 			printf("Test(v_processeur):find if\n");
 			push(VM_length,condition_stack);
 			VM_length++;//leave the space in VM for condition jump
-#ifdef PROCESSEUR_DEBUG
-#endif
 			s_push(temp_type_stack, if_type_s_stack);//push the before-if type state
 			a_push(func_input, func_input_a_stack);
 			push(func_input_num, func_input_num_stack);
@@ -549,7 +605,9 @@ do
 			push(INT,temp_type_stack);
 			VM[VM_length++] = 0;//function lit
 			VM[VM_length++] = atoi(currtext);
+#ifdef PROCESSEUR_DEBUG
 			printf("Test(v_processer):add %s in VM\n",currtext);
+#endif
 		}
 		else
 		{
@@ -608,8 +666,9 @@ do
 		para_LAC_pos = func_LAC_pos + 1 + LAC[func_LAC_pos];
 		return_LAC_pos = para_LAC_pos + 1 + LAC[para_LAC_pos];
 		func_VM_pos = LAC[return_LAC_pos + 1 + LAC[return_LAC_pos]];
-
+#ifdef PROCESSEUR_DEBUG
 		printf("Test(processer): func_LAC_pos:%d, parameter:%d, return:%d, VM_pos:%d\n",
+#endif
 			func_LAC_pos, para_LAC_pos, return_LAC_pos, func_VM_pos);
 
 		//test type of parameter
@@ -641,7 +700,9 @@ do
 			}
 			if(VM[func_VM_pos]==0)//fonction de base
 			{
+#ifdef PROCESSEUR_DEBUG
 				printf("Test: VM pos %d\n",func_VM_pos);
+#endif
 				function = processeur[VM[func_VM_pos+1]];
 				printf("execute function %s\n",currtext);
 				function();
@@ -655,7 +716,9 @@ do
 					if(VM[VM[VM_processer]] == 0) // if basic function
 					{
 						function = processeur[VM[VM[VM_processer] + 1]];
+#ifdef PROCESSEUR_DEBUG
 						printf("Test(processer): execute VM pos %d\n",VM[VM_processer]);
+#endif
 						function();
 					}
 					else if(VM[VM[VM_processer]] == 1)
@@ -675,7 +738,7 @@ do
 		}
 
 	}
-	else
+	else//if currtext is a variable
 	{
 		var_type = test_type(currtext);
 		if(var_type == INT)
@@ -684,7 +747,27 @@ do
 			push(atoi(currtext),data);
 			printf("pushed %s\n",currtext);
 		}
-		else printf("[ERROR]: sementic fault, %s not a INT type\n",currtext);
+		else if(var_type == CHAIN)
+		{
+			push(CHAIN,type);
+			int m = 2;//skip the "_
+			int chain_add = chain_memory_length;
+			int chain_len = 0;
+			chain_memory_length++;//keep space for the length of chain
+			while(currtext[m] != '\0')
+			{
+				chain_len++;
+				chain_memory[chain_memory_length++] = currtext[m++];
+			}
+			chain_len--;chain_memory_length--;//elimine " at the end
+			chain_memory[chain_add] = chain_len;
+			push(chain_add,data);
+#ifdef PROCESSEUR_DEBUG
+			printf("Test(processer):pushed %d char: %s at address %d\n",
+				chain_len, currtext, chain_add);
+#endif
+		}
+		else printf("[ERROR]: sementic fault, %s is not a legal type\n",currtext);
 	}
 	
 }while(D_to_next(lex_list));
@@ -722,6 +805,12 @@ void init()
 	outputval[0]=INT;
 	func2LAC(17,equal,-1,"=",2,inputval,1,outputval);
 
+	inputval[0]=CHAIN;
+	outputval[0]=CHAIN;outputval[1]=INT;
+	func2LAC(21,count,-1,"count",1,inputval,2,outputval);
+	
+	inputval[0]=INT;inputval[1]=CHAIN;
+	func2LAC(22,func_type,-1,"type",2,inputval,0,outputval);
 	inputval[0]=INT;
 	func2LAC(23,LAC_if,-1,"if",1,inputval,0,outputval);
 
