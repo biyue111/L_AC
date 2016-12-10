@@ -5,7 +5,8 @@
 #include "util.c"
 #include "analex.h"
 #include "analex.c"
-
+#ifndef _PROCESSEUR_C
+#define _PROCESSEUR_C
 /*************************
 * pile de donnees: data
 * pile de type: type
@@ -117,7 +118,18 @@ void fin()
 }
 void str()
 {
-
+	int process_pos;
+	int chain_len;
+	pop(&process_pos,retour);
+	chain_len = VM[process_pos+1];
+	push(process_pos+2+chain_len,retour);
+	push(CHAIN,type);
+	push(chain_memory_length,data);
+	int i=0;
+	for(i=0;i<chain_len;i++)
+	{
+		
+	}
 }
 
 void lit()//put a INT in stack
@@ -609,6 +621,23 @@ do
 			printf("Test(v_processer):add %s in VM\n",currtext);
 #endif
 		}
+		else if(var_type == CHAIN)
+		{
+			push(CHAIN,temp_type_stack);
+			VM[VM_length++] = 1;//function str
+			VM_length++;//keep the space for chain length
+			int chain_len_pos = VM_length;
+			int chain_len = 0;
+			int l = 2;//skip "_
+			while(currtext[l] != '\0')//put string in VM
+			{
+				chain_len++;
+				VM[VM_length++]=currtext[l++];
+			}
+			chain_len--;
+			VM_length--;//elimine the "
+			VM[chain_len_pos] = chain_len;
+		}
 		else
 		{
 			printf("[ERROR](v_processer): , %s not a INT type\n",currtext);
@@ -774,7 +803,7 @@ do
 
 }
 
-void init()
+void VM_LAC_init()
 {
 	//int get_LAC(char *func_base_str,int num_e,int *type_e,int num_s,int *type_s,pfunc_base f)
 	processeur_length = 0;
@@ -818,7 +847,8 @@ void init()
 
 	func2LAC(25,LAC_then,-1,"then",0,inputval,0,outputval);
 }
-
+#endif
+/*
 int main(int argc, char* argv[])
 {
 	int i=0;
@@ -828,7 +858,8 @@ int main(int argc, char* argv[])
 	type = create_stack();
 	retour = create_stack();
 
-	init();
+	VM_LAC_init();
+
 	printf("Test: LAC:");
 	for(i=0;i<LAC_length;i++) printf("%d ",LAC[i]);
 	printf("\n");
@@ -856,3 +887,4 @@ int main(int argc, char* argv[])
 	}	
 	return 0;
 }
+*/

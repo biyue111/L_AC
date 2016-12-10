@@ -7,6 +7,8 @@
 #include "util.h"
 #include "util.c"
 
+#ifndef _ANALEX_C
+#define _ANALEX_C
 int test_quotation(const char *p, int *begin,const int pre,const int pos);
 void TestFun(char *p,int *start,int *end,D_linklist* arr);
 void DelCommentaryFun(char *p,int *start,int *end,D_linklist* arr);
@@ -143,3 +145,4 @@ void analex(char *text, D_linklist* ana_lex )
 	FindHandleRegec(DelCommentaryFun,REG_COMMENTARY_MULTI,text,NULL);
 	FindHandleRegec(FindIndiFun,REG_FIND_INDI,text,ana_lex);
 }
+#endif
