@@ -237,6 +237,17 @@ int stack_compare(stack *s1, stack *s2)
 	return 1;
 }
 
+void print_stack(stack* i_stack)
+{
+	stack_node *temp_n = i_stack->top;
+	while(temp_n != NULL)
+	{
+		printf("%d ",temp_n->val);	
+		temp_n = temp_n->next;
+	}
+	printf("\n");
+}
+
 int stack_clear(stack* i_stack)
 {
 	while(i_stack->length > 0)

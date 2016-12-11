@@ -71,3 +71,7 @@ This project realise a comiler of language L_AC
 
 - Hugo
 - Nicolas
+##document structure
+##Explanation of basic functions
+###dup
+In LAC, the parameters number and output number of <code>dup</code> are 0. This means the processor stop the parameter type checking, the checking is implemented by function itself. Because this function will change the type stack.

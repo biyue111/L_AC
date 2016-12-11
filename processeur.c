@@ -47,6 +47,7 @@ stack* data,*type,*retour;
 char *currtext;
 char chain_memory[CHAIN_MEMORY_SIZE];
 int chain_memory_length;
+int processor_error_flag;//if error, exit processor
 
 int test_type(char *s);
 
@@ -101,10 +102,6 @@ int func2LAC(int funcptpos,pfunc_base f,int VM_pos,char *func_base_str,
 }
 
 
-int complie()
-{
-	
-}
 /*******************
 * fonction de base
 *******************/
@@ -114,7 +111,12 @@ void fin()
 	pop(&process,retour);
 	//move the processer for user-defiend
 	if(pop(&process,retour))
+	{
 		push(process + 1, retour);
+#ifdef PROCESSEUR_DEBUG
+		printf("Test(fin):pushed %d in retour\n",process+1);
+#endif
+	}
 }
 void str()
 {
@@ -124,11 +126,12 @@ void str()
 	chain_len = VM[process_pos+1];
 	push(process_pos+2+chain_len,retour);
 	push(CHAIN,type);
-	push(chain_memory_length,data);
+	push(chain_memory_length,data);//address of chain
+	chain_memory[chain_memory_length++] = chain_len;
 	int i=0;
 	for(i=0;i<chain_len;i++)
 	{
-		
+		chain_memory[chain_memory_length++] = (char)VM[process_pos+2+i];
 	}
 }
 
@@ -149,82 +152,207 @@ void lit()//put a INT in stack
 	//}
 	//else printf("[ERROR]: sementic fault, %s not a INT type\n",currtext);
 }
+
+void dup()
+{
+	int processor_pos;
+	int aug,aug_type;
+
+	if(pop(&processor_pos,retour))
+		push(processor_pos+1,retour);
+	if(pop(&aug_type,type) && pop(&aug,data))
+	{
+		push(aug_type,type);
+		push(aug_type,type);
+		push(aug,data);
+		push(aug,data);
+	}	
+	else
+	{
+		printf("[ERROR](dup):No input parameter\n");
+		processor_error_flag = 1;
+		return;
+	}
+}
+
+void drop()
+{
+	int processor_pos;
+	int aug,aug_type;
+
+	if(pop(&processor_pos,retour))
+		push(processor_pos+1,retour);
+	if(pop(&aug_type,type) && pop(&aug,data))
+	{ }	
+	else
+	{
+		printf("[ERROR](drop):No input parameter\n");
+		processor_error_flag = 1;
+		return;
+	}
+}
+
+void swap()
+{
+	int processor_pos;
+	int aug1,aug2,aug_type1,aug_type2;
+
+	if(pop(&processor_pos,retour))
+		push(processor_pos+1,retour);
+	if(pop(&aug_type1,type) && pop(&aug1,data) &&
+		pop(&aug_type2,type) && pop(&aug2,data))
+	{
+		push(aug_type1,type);
+		push(aug_type2,type);
+		push(aug1,data);
+		push(aug2,data);
+	}	
+	else
+	{
+		printf("[ERROR](swap):No input parameter\n");
+		processor_error_flag = 1;
+		return;
+	}
+}
+
 void add()
 {
 	int process;
-	int aug1,aug2,t_aug1,t_aug2;
+	int aug1,aug2;
+	int aug_t;
 	int res;
 	int v1,v2;
-	int type_verfi=0;
+//	int type_verfi=0;
 
 	if(pop(&process,retour))
 		push(process+1,retour);
-/*
-	v1 = pop(&t_aug1,type);
-	v2 = pop(&t_aug2,type);
-	if(v1 && v2)
-	{
-		if(t_aug1 == INT && t_aug2 == INT)
-		{
-			push(INT,type);
-			type_verfi = 1;
-		}
-		else
-		{
-			printf("[ERROR]: sementic fault, wrong type\n");
-		}
-	}
-	else
-	{
-		printf("[ERROR]: sementic, lack varable");
-	}
-*/
-//	if(type_verfi)
+
+//	v1 = pop(&t_aug1,type);/*{{{*/
+//	v2 = pop(&t_aug2,type);
+//	if(v1 && v2)
 //	{
+//		if(t_aug1 == INT && t_aug2 == INT)
+//		{
+//			push(INT,type);
+//			type_verfi = 1;
+//		}
+//		else
+//			printf("[ERROR]: sementic fault, wrong type\n");
+//	}
+//	else
+//		printf("[ERROR]: sementic, lack varable");
+//
+//	if(type_verfi)
+//	{/*}}}*/
 		pop(&aug1,data);
 		pop(&aug2,data);
+		pop(&aug_t,type);
+		pop(&aug_t,type);
+		
 		res = aug1 + aug2;
 		push(res,data);
+		push(INT,type);
 		printf("Test(add):pushed %d\n",res);
 //	}
 	
 }
 
+void minus()
+{
+	int process;
+	int aug1,aug2;
+	int aug_t;
+	int res;
+
+	if(pop(&process,retour))
+		push(process+1,retour); 
+	pop(&aug1,data);
+	pop(&aug2,data);
+	pop(&aug_t,type);
+	pop(&aug_t,type);
+
+	res = aug2 - aug1;
+	push(res,data);
+	push(INT,type);
+#ifdef PROCESSEUR_DEBUG
+	printf("Test(minus):pushed %d\n",res);
+#endif
+}
+
+void multiply()
+{
+	int process;
+	int aug1,aug2;
+	int aug_t;
+	int res;
+
+	if(pop(&process,retour))
+		push(process+1,retour); 
+	pop(&aug1,data);
+	pop(&aug2,data);
+	pop(&aug_t,type);
+	pop(&aug_t,type);
+	res = aug2 * aug1;
+	push(res,data);
+	push(INT,type);
+#ifdef PROCESSEUR_DEBUG
+	printf("Test(multiply):pushed %d\n",res);
+#endif
+}
+
+void divide()
+{
+	int process;
+	int aug1,aug2;
+	int aug_t;
+	int res;
+
+	if(pop(&process,retour))
+		push(process+1,retour); 
+	pop(&aug1,data);
+	pop(&aug2,data);
+	pop(&aug_t,type);
+	pop(&aug_t,type);
+	res = aug2 / aug1;
+	push(res,data);
+	push(INT,type);
+#ifdef PROCESSEUR_DEBUG
+	printf("Test(minus):pushed %d\n",res);
+#endif
+}
 void point()
 {
 	int process;
 	int aug1,t_aug1;
+	int aug_t;
 	int v1;
 	int type_verfi=0;
 
 	if(pop(&process,retour))
 		push (process+1,retour);
-/*
-	pop(&process,retour);
-	v1 = pop(&t_aug1,type);
-	if(v1)
-	{
-		if(t_aug1 == INT)
-		{
-			type_verfi = 1;
-			printf("Test: right type\n");
-		}
-		else
-		{
-			printf("[ERROR]: sementic fault, wrong type\n");
-		}
-	}
-	else
-	{
-		printf("[ERROR]: sementic, lack varable");
-	}
-*/
-
-//	if(type_verfi)
+		
+//	pop(&process,retour);/*{{{*/
+//	v1 = pop(&t_aug1,type);
+//	if(v1)
 //	{
-		pop(&aug1,data);
-		printf("%d\n",aug1);
+//		if(t_aug1 == INT)
+//		{
+//			type_verfi = 1;
+//			printf("Test: right type\n");
+//		}
+//		else
+//		{
+//			printf("[ERROR]: sementic fault, wrong type\n");
+//		}
 //	}
+//	else
+//	{
+//		printf("[ERROR]: sementic, lack varable");
+//	}/*}}}*/
+
+	pop(&aug1,data);
+	pop(&aug_t,type);
+	printf("%d\n",aug1);
 }
 
 void count()
@@ -232,14 +360,18 @@ void count()
 	int chain_add;
 	int chain_len;
 	int process;
+	int aug_t;
 	if(pop(&process,retour))
 		push (process+1,retour);
 		
 	pop(&chain_add,data);
+	pop(&aug_t,type);
 	chain_len = chain_memory[chain_add];
 	chain_add++;
 	push(chain_add,data);
+	push(CHAIN,type);
 	push(chain_len,data);
+	push(INT,type);
 }
 
 void func_type()
@@ -247,10 +379,13 @@ void func_type()
 	int chain_add;
 	int chain_len;
 	int process;
+	int aug_t;
 	if(pop(&process,retour))
 		push (process+1,retour);
 	pop(&chain_len,data);
 	pop(&chain_add,data);
+	pop(&aug_t,type);
+	pop(&aug_t,type);
 	int i=0;
 	for(i=0;i<chain_len;i++)
 		printf("%c",chain_memory[chain_add+i]);
@@ -262,21 +397,27 @@ void equal()
 	int process;
 	int aug1,aug2;
 	int v1;
-	int type_verfi=0;
+	int aug_t;
 
 	if(pop(&process,retour))
 		push (process+1,retour);
 
 	pop(&aug1,data);
 	pop(&aug2,data);
+	pop(&aug_t,type);
+	pop(&aug_t,type);
+
 	push(aug1 == aug2, data);
+	push(INT,type);
 }
 
 void LAC_if(){
 	int process;
 	int aug1;
+	int aug_t;
 
 	pop(&aug1,data);
+	pop(&aug_t,type);
 	if(pop(&process,retour))
 		if(aug1)//if true
 			push(process+2,retour);
@@ -292,7 +433,6 @@ void LAC_else(){
 	//only in condition <iftrue> we will meet else function
 	if(pop(&process,retour))
 		push(VM[process+1],retour);
-	
 	else
 		printf("[ERROR](else): Try to use if in calculator mode");
 }
@@ -473,7 +613,7 @@ do
 	}
 	else if(currtext[0]==';' && currtext[1]=='\0')
 	{//right defined user function
-		VM[VM_length++] = 2;//add fin function
+		VM[VM_length++] = 4;//add fin function
 		func_output_num = temp_type_stack->length;
 		for(k=func_output_num-1;k>=0;k--)
 			pop(&func_output[k],temp_type_stack);
@@ -553,11 +693,9 @@ do
 			stack *temp_s = create_stack();
 			int temp_func_input[10];
 			int temp_func_num;
-		printf("TEST\n");
 			s_pop(temp_s, if_type_s_stack);
 			a_pop(temp_func_input, func_input_a_stack);
 			pop(&temp_func_num,func_input_num_stack);
-		printf("TEST\n");
 			s_push(temp_type_stack, if_type_s_stack);
 			a_push(func_input, func_input_a_stack);
 			push(func_input_num, func_input_num_stack);
@@ -624,9 +762,9 @@ do
 		else if(var_type == CHAIN)
 		{
 			push(CHAIN,temp_type_stack);
-			VM[VM_length++] = 1;//function str
-			VM_length++;//keep the space for chain length
+			VM[VM_length++] = 2;//function str
 			int chain_len_pos = VM_length;
+			VM_length++;//keep the space for chain length
 			int chain_len = 0;
 			int l = 2;//skip "_
 			while(currtext[l] != '\0')//put string in VM
@@ -669,8 +807,10 @@ int var_type;
 int k=0;
 int type_test_flag=1;
 int error_rep;
+
 if(!D_to_begin(lex_list)) return;//list empty
 processeur_state = MODE_CALCULATER;
+processor_error_flag = 0;
 do
 {
 	currtext = lex_list->fence->content->value;
@@ -686,7 +826,6 @@ do
 			if(!D_to_next(lex_list))//
 				break;
 		}
-
 	}
 
 	currtext = lex_list->fence->content->value;
@@ -700,33 +839,37 @@ do
 #endif
 			func_LAC_pos, para_LAC_pos, return_LAC_pos, func_VM_pos);
 
-		//test type of parameter
-
-		
+		int para_temp_array[10];//to store the type to reput in stack
 		for(k=0;k<LAC[para_LAC_pos];k++)
 		{
 			if(pop(&para_type,type))
 			{
-				if(para_type!=LAC[para_LAC_pos+k+1])
+				para_temp_array[k] = para_type;
+				if(para_type!=LAC[para_LAC_pos+k+1] && LAC[para_LAC_pos+k+1]!=ANY)
 				{
 					type_test_flag = 0;
-					printf("[ERROR]: sementic fault, wrong type\n");
+					printf("[ERROR]: sementic fault, wrong type for function %s\n",currtext);
 					break;
 				}
 			}
 			else
 			{
+				k--;
 				type_test_flag = 0;
-				printf("[ERROR]: sementic fault, lack of parametter\n");
+				printf("[ERROR]: sementic fault, lack of parametter for function %s\n",currtext);
+				break;
 			}
 		}
-
+		for(;k>0;k--)//re-put types in stack
+		{
+			push(para_temp_array[k],type);
+		}
 		if(type_test_flag)//if function has right input type
 		{
-			for(k=0;k<LAC[return_LAC_pos];k++)
-			{
-				push(LAC[return_LAC_pos+1+k],type);
-			}
+//			for(k=0;k<LAC[return_LAC_pos];k++)
+//			{
+//				push(LAC[return_LAC_pos+1+k],type);
+//			}
 			if(VM[func_VM_pos]==0)//fonction de base
 			{
 #ifdef PROCESSEUR_DEBUG
@@ -735,6 +878,8 @@ do
 				function = processeur[VM[func_VM_pos+1]];
 				printf("execute function %s\n",currtext);
 				function();
+				if(processor_error_flag)//have error
+					return;
 			}
 			else if(VM[func_VM_pos]==1)//fonction defini en LAC
 			{//begin runtime mode
@@ -798,6 +943,13 @@ do
 		}
 		else printf("[ERROR]: sementic fault, %s is not a legal type\n",currtext);
 	}
+#ifdef PROCESSEUR_DEBUG
+	printf("Test(processer):current type stack\n");
+	print_stack(type);
+
+	printf("Test(processer):current data stack\n");
+	print_stack(data);
+#endif
 	
 }while(D_to_next(lex_list));
 
@@ -819,33 +971,40 @@ void VM_LAC_init()
 //int func2LAC(int funcptpos,pfunc_base f,int VM_pos,char *func_base_str,
 //		int num_e,int *type_e,int num_s,int *type_s)
 	func2LAC(0,lit,-1,"lit",0,inputval,0,outputval);//order = 0
-	//func2LAC(1,str,-1,"str",0,inputval,0,outputval);
-	func2LAC(2,fin,-1,"fin",0,inputval,0,outputval);//order = 1 
+	func2LAC(1,str,-1,"str",0,inputval,0,outputval);//order = 1
+	func2LAC(2,fin,-1,"fin",0,inputval,0,outputval);//order = 2 
 
 	inputval[0]=INT;
 	outputval[0]=INT;
-	func2LAC(13,point,-1,".",1,inputval,0,outputval);
+	func2LAC(3,point,-1,".",1,inputval,0,outputval);
 	
 	inputval[0]=INT;inputval[1]=INT;
 	outputval[0]=INT;
-	func2LAC(14,add,-1,"+",2,inputval,1,outputval);
+	func2LAC(4,add,-1,"+",2,inputval,1,outputval);
+	func2LAC(5,minus,-1,"-",2,inputval,1,outputval);
+	func2LAC(6,multiply,-1,"*",2,inputval,1,outputval);
+	func2LAC(16,divide,-1,"/",2,inputval,1,outputval);
 	
 	inputval[0]=INT;inputval[1]=INT;
 	outputval[0]=INT;
-	func2LAC(17,equal,-1,"=",2,inputval,1,outputval);
+	func2LAC(7,equal,-1,"=",2,inputval,1,outputval);
+	
+	func2LAC(8,dup,-1,"dup",0,inputval,0,outputval);
+	func2LAC(9,drop,-1,"drop",0,inputval,0,outputval);
+	func2LAC(10,swap,-1,"swap",0,inputval,0,outputval);
 
 	inputval[0]=CHAIN;
 	outputval[0]=CHAIN;outputval[1]=INT;
-	func2LAC(21,count,-1,"count",1,inputval,2,outputval);
+	func2LAC(11,count,-1,"count",1,inputval,2,outputval);
 	
 	inputval[0]=INT;inputval[1]=CHAIN;
-	func2LAC(22,func_type,-1,"type",2,inputval,0,outputval);
+	func2LAC(12,func_type,-1,"type",2,inputval,0,outputval);
 	inputval[0]=INT;
-	func2LAC(23,LAC_if,-1,"if",1,inputval,0,outputval);
+	func2LAC(13,LAC_if,-1,"if",1,inputval,0,outputval);
 
-	func2LAC(24,LAC_else,-1,"else",0,inputval,0,outputval);
+	func2LAC(14,LAC_else,-1,"else",0,inputval,0,outputval);
 
-	func2LAC(25,LAC_then,-1,"then",0,inputval,0,outputval);
+	func2LAC(15,LAC_then,-1,"then",0,inputval,0,outputval);
 }
 #endif
 /*

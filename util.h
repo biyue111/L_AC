@@ -7,11 +7,12 @@
 
 typedef enum vartypes
 {
-	UNDEF,
+	ANY,
 	INT,
 	CHAIN,
 	INDI,
-	OP
+	OP,
+	UNDEF
 }vartypes;
 
 typedef struct node_content
