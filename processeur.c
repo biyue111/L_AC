@@ -138,7 +138,7 @@ void str()
 void lit()//put a INT in stack
 {
 	int processer_pos;
-	int var_type=0;
+	//int var_type=0;
 
 	pop(&processer_pos,retour);
 	push(processer_pos+2,retour);
@@ -221,7 +221,7 @@ void add()
 	int aug1,aug2;
 	int aug_t;
 	int res;
-	int v1,v2;
+	//int v1,v2;
 //	int type_verfi=0;
 
 	if(pop(&process,retour))
@@ -233,6 +233,7 @@ void add()
 //	{
 //		if(t_aug1 == INT && t_aug2 == INT)
 //		{
+//		
 //			push(INT,type);
 //			type_verfi = 1;
 //		}
@@ -242,8 +243,7 @@ void add()
 //	else
 //		printf("[ERROR]: sementic, lack varable");
 //
-//	if(type_verfi)
-//	{/*}}}*/
+//	if(type_verfi)/*}}}*/
 		pop(&aug1,data);
 		pop(&aug2,data);
 		pop(&aug_t,type);
@@ -323,10 +323,10 @@ void divide()
 void point()
 {
 	int process;
-	int aug1,t_aug1;
+	int aug1;
 	int aug_t;
-	int v1;
-	int type_verfi=0;
+	//int v1;
+	//int type_verfi=0;
 
 	if(pop(&process,retour))
 		push (process+1,retour);
@@ -396,7 +396,7 @@ void equal()
 {
 	int process;
 	int aug1,aug2;
-	int v1;
+	//int v1;
 	int aug_t;
 
 	if(pop(&process,retour))
@@ -499,7 +499,7 @@ int test_func(char* s,int *LAC_pos)
 
 int test_type(char *s)
 {
-	int k=0;
+	//int k=0;
 	int s_length = 0;
 	int type;
 	while(s[s_length]!='\0')
@@ -527,7 +527,7 @@ int v_processer(D_linklist* lex_list)
 		func_input[m] = -1;
 		func_output[m] = -1;
 	}
-	stack *temp_data_stack,*temp_type_stack;
+	stack *temp_type_stack;
 	stack *condition_stack;//record the level of condition
 	//record the temps_data_stack 
 	//when enter if
@@ -535,7 +535,7 @@ int v_processer(D_linklist* lex_list)
 	a_stack *func_input_a_stack;
 	stack *func_input_num_stack;
 	//stack *condition_type_stack;
-	temp_data_stack = create_stack();
+	//temp_data_stack = create_stack();
 	temp_type_stack = create_stack();
 	condition_stack = create_stack();
 	if_type_s_stack = create_s_stack();
@@ -796,7 +796,7 @@ void exit_processer()
 
 int runtime()
 {
-
+	return 0;
 }
 
 void processer(D_linklist* lex_list)

@@ -15,35 +15,33 @@ void DelCommentaryFun(char *p,int *start,int *end,D_linklist* arr);
 typedef void (*HandleFun)(char*,int*,int*,D_linklist*);
 void FindHandleRegec(HandleFun H_fun,char *c_regexp,char *p,D_linklist* arr);
 
-/*
-int test_quotation(const char *p, int *begin,const int pre,const int pos)
-{//return 0, within the "", return 1 out ""
-	int end = *begin,flag = 1;
-	int i;
-	//no quo after
-	for(i=pos;p[i]!='\0';i++)
-	{
-		if (p[i]=='"') break;
-	}
-	if(p[i]=='\0') return 0;
-
-	//find pair " before ( or \ 
-	for(i=*begin;i<=pre;i++)
-	{
-		if (p[i]=='"')
-		{
-			if(flag)
-				flag = 0;
-			else
-			{
-				flag = 1;
-				*begin = i+1;
-			}
-		}
-	}
-	return flag;
-}
-*/
+//int test_quotation(const char *p, int *begin,const int pre,const int pos)/*{{{*/
+//{//return 0, within the "", return 1 out ""
+//	int end = *begin,flag = 1;
+//	int i;
+//	//no quo after
+//	for(i=pos;p[i]!='\0';i++)
+//	{
+//		if (p[i]=='"') break;
+//	}
+//	if(p[i]=='\0') return 0;
+//
+//	//find pair " before ( or inverse slash 
+//	for(i=*begin;i<=pre;i++)
+//	{
+//		if (p[i]=='"')
+//		{
+//			if(flag)
+//				flag = 0;
+//			else
+//			{
+//				flag = 1;
+//				*begin = i+1;
+//			}
+//		}
+//	}
+//	return flag;
+//}/*}}}*/
 
 void TestFun(char *p,int *start,int *end,D_linklist* arr)
 {
@@ -81,7 +79,7 @@ void DelCommentaryFun(char *p,int *start,int *end,D_linklist* arr)
 
 void FindIndiFun(char *p,int *start,int *end,D_linklist* arr)
 {
-	int i=0,j=0,k=0;
+	int j=0,k=0;
 	char tempstr[20];
 	//while(arr[i][0]!='\0') i++;
 	for(k=*start;k<*end;k++)
@@ -111,7 +109,7 @@ void FindHandleRegec(HandleFun H_fun,char *c_regexp,char *p,D_linklist *arr) //i
 {
 	
 	int res = 1,start = 0,end = 0;
-	int test_quo_pos = 0;
+	//int test_quo_pos = 0;
 	regex_t regexp;
 	regmatch_t pmatch[100];
 

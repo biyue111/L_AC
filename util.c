@@ -33,6 +33,7 @@ D_linklist* create_D_list(vartypes i_type,char* i_s)
 	D_list->tail = h;
 	D_list->length = 0;
 	D_list->pos = 0;
+	return D_list;
 }
 
 int append_Dlist_node(D_linklist* list,vartypes i_type,char* i_s)
@@ -114,6 +115,7 @@ int Dlist_clear(D_linklist* list)
 		list->length--;
 		free(temp_n);
 	}
+	return 0;
 }
 
 /***********
@@ -145,12 +147,12 @@ tree_node* create_tree_node(vartypes i_type,char* i_s)
 
 int add_leftchild(tree_node *root,tree_node *child)
 {
-	
+	return 0;
 }
 
 int add_rightchild()
 {
-
+	return 0;
 }
 /*************
 *************/
@@ -257,6 +259,7 @@ int stack_clear(stack* i_stack)
 		i_stack->length--;
 		free(temp_n);
 	}
+	return 0;
 }
 
 /*************
@@ -334,6 +337,7 @@ int a_stack_clear(a_stack* i_stack)
 		i_stack->length--;
 		free(temp_n);
 	}
+	return 0;
 }
 /*********
 *********/
@@ -406,6 +410,7 @@ int s_stack_clear(s_stack* i_stack)
 		i_stack->length--;
 		free(temp_n);
 	}
+	return 0;
 }
 #endif
 
