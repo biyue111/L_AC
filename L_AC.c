@@ -130,6 +130,32 @@ void compilor(char *file)
 #endif
 }
 
+void analise_lexical(char *infile,char *outfile)
+{
+	char input_text[1000];
+	file_input(input_text,infile);
+	FILE *outfp;
+#ifdef L_AC_DEBUG
+	int i=0;
+	while(input_text[i] != '\0')
+	{
+		printf("%c",input_text[i]);
+		i++;
+	}
+#endif
+
+	D_linklist* ana_lex = create_D_list(0,"");
+	analex(input_text,ana_lex);
+	D_to_begin(ana_lex);
+	outfp = fopen(outfile,"w");
+	for(i=0;i<ana_lex->length;i++)
+	{
+		fprintf(outfp,"%s\n",ana_lex->fence->content->value);
+		D_to_next(ana_lex);
+	}
+	fclose(outfp);
+}
+
 int main(int argc, char* argv[])
 {
 	//D_linklist* ana_lex=create_D_list(INT,"0");
@@ -166,10 +192,21 @@ int main(int argc, char* argv[])
 	}
 	else if(argc == 3)
 	{
-		if(strcmp(argv[1],"-f"))
+		if(strcmp(argv[1],"-f")==0)
 		{
-			printf("[Message] Input from .//input//input.lac\n");
+			printf("[Message] Input from %s\n",argv[2]);
 			compilor(argv[2]);
+		}
+		else 
+			input_flag = 0;
+	}
+	else if(argc == 4)
+	{
+		if(strcmp(argv[1],"-l")==0)//analise lexical
+		{
+			printf("[Message] Input from %s\n",argv[2]);
+			analise_lexical(argv[2],argv[3]);
+			printf("[Message] Input from %s\n",argv[3]);
 		}
 		else 
 			input_flag = 0;
