@@ -1,0 +1,11 @@
+1 2 + .
+\ -10 2 + .
+20 10 - .
+2 3 * .
+10 2 / .
+2 dup + .
+1 2 swap . .
+1 2 drop .
+" Bonjour" count type
+" 1234" count type
+
