@@ -16,6 +16,7 @@ void help()
 	-i \tInterpretor mode\n\
 	-f \tCompilor mode, use the file ./input.lac\n\
 	-f [filepath] \tCompilor mode, use custom file\n\
+	-l [inputfile] [outputfile] \tOnly run lexcal analyse\n\
 	-r \truntime mode\n");
 }
 
