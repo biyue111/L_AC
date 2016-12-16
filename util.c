@@ -2,6 +2,9 @@
 #define UTIL_C_
 #include "util.h"
 
+#ifdef DEBUG
+#define UTIL_DEBUG
+#endif
 /**************
 
 **************/
@@ -218,9 +221,9 @@ int stack_get_top(int* pnum,stack* i_stack)//get the top of stack
 
 int stack_compare(stack *s1, stack *s2)
 {
-
+#ifdef UTIL_DEBUG
 	printf("Test(stack_compare):length%d %d\n",s1->length,s2->length);
-
+#endif
 	if(s1->length != s2->length)
 		return 0;
 	stack_node *n1, *n2;
@@ -230,7 +233,9 @@ int stack_compare(stack *s1, stack *s2)
 	{
 		if(n1->val != n2->val)
 		{
+#ifdef UTIL_DEBUG
 			printf("Test(stack_compare):%d %d\n",n1->val,n2->val);
+#endif
 			return 0;
 		}
 		n1 = n1->next;

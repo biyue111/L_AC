@@ -1,0 +1,18 @@
+( This is a document to test analex.c
+mutiline comment. To test it, You can type: 
+./L_AC.o -l analex.lac analex.laco)
+\ Test Begin
+2 + 1 .
+\ only accept one line chain
+" chain caracteres"
+1+2+2+4 \ for calculator
+-10 \ - & 10 will be seprated
+
+\ More test for Comments and chain
+" Comment" \ Within " two chain"
+" Multi-Comment" ( Within) " two chain"
+" ( testing) not a comment"
+" \ not a one line comment"
+( " this is not a chain but a comment")
+( one comment has higher priority, this is not a comment \ )
+

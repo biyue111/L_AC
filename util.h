@@ -17,7 +17,7 @@ typedef enum vartypes
 
 typedef struct node_content
 {
-	char value[20];
+	char value[100];
 	vartypes type;
 }node_content;
 

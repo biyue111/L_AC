@@ -10,7 +10,9 @@ from right to left
 <term> ::= [+|-][<term>(+|-)]<factor>
 <factor> ::= [<factor>(x|/)](<nature>|”(”<term>”)”)
 ***************/
-
+#ifdef DEBUG
+#define CALCULATE_DEBUG
+#endif
 vartypes verify_type(char *s) //return the type
 {
 
@@ -23,10 +25,14 @@ int nature(tree_node *root,D_linklist *ana_lex_list,int *finish)
 	//if(flag && D_to_pre(ana_lex_list))//successfully move to pre
 	{
 		con = ana_lex_list->fence->content;
+#ifdef CALCULATE_DEBUG
 		printf("Test(nature):get %s\n",con->value);
+#endif
 		if(isdigit(con->value[0]) && con->value[0]!='0')
 		{
+#ifdef CALCULATE_DEBUG
 			printf("Test(nature):right nature %s\n",con->value);
+#endif
 			memcpy(root->content,con,sizeof(node_content));
 			if(!D_to_pre(ana_lex_list))
 			{
@@ -54,7 +60,9 @@ int term(tree_node *root,D_linklist *ana_lex_list,int *finish)
 	//if(flag && D_to_pre(ana_lex_list))//successfully move to pre
 	{
 		con = ana_lex_list->fence->content;
+#ifdef CALCULATE_DEBUG
 		printf("Test(term):get %s\n",con->value);
+#endif
 		//con->type = verify_type(con->value);
 		//if(con->type==OP && (con->value[0]=='+'||con->value[0]=='-'))
 		if((con->value[0]=='+'||con->value[0]=='-'))
@@ -72,7 +80,9 @@ int term(tree_node *root,D_linklist *ana_lex_list,int *finish)
 			else if(flag)//finish
 			{
 				*finish = 1;
+#ifdef CALCULATE_DEBUG
 				printf("Test(term):only have +- at begin\n");
+#endif
 				return flag;
 			}
 		}
@@ -109,7 +119,9 @@ int factor(tree_node *root,D_linklist *ana_lex,int *finish)
 	con = ana_lex->fence->content;
 	tree_node *r_c = create_tree_node(0,"");
 	root->rightchild = r_c;
+#ifdef CALCULATE_DEBUG
 	printf("Test(factor):get %s\n",con->value);
+#endif
 	if(strcmp(con->value,")")==0)
 	{
 		if(D_to_pre(ana_lex))//move to previous node
@@ -153,7 +165,9 @@ int factor(tree_node *root,D_linklist *ana_lex,int *finish)
 	if(flag)
 	{
 		con = ana_lex->fence->content;
+#ifdef CALCULATE_DEBUG
 		printf("Test(factor):After nature, get %s\n",con->value);
+#endif
 		if((con->value[0]=='*'||con->value[0]=='/'))
 		{
 			memcpy(root->content,con,sizeof(node_content));

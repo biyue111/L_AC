@@ -9,6 +9,10 @@
 
 #ifndef _ANALEX_C
 #define _ANALEX_C
+
+#ifdef DEBUG
+#define ANALEX_DEBUG
+#endif
 int test_quotation(const char *p, int *begin,const int pre,const int pos);
 void TestFun(char *p,int *start,int *end,D_linklist* arr);
 void DelCommentaryFun(char *p,int *start,int *end,D_linklist* arr);
@@ -50,14 +54,18 @@ void TestFun(char *p,int *start,int *end,D_linklist* arr)
 	substr[0] = '\0';
 	strncpy(substr,p + s_p,e_p - s_p);
 	substr[e_p - s_p]= '\0';
-	printf("%s : start %d, End %d\n",substr,s_p,e_p);
+#ifdef ANALEX_DEBUG
+	printf("TEXT(analex):%s : start %d, End %d\n",substr,s_p,e_p);
+#endif
 }
 
 void del_substr(char *p,int *start,int *end)
 {
 	int s_p = *start,e_p = *end;
 	char *l = p + s_p, *r = p + e_p;
+#ifdef ANALEX_DEBUG
 	printf("TEXT: delet: %d--%d\n",s_p,e_p);
+#endif
 	while(*r != '\0')
 	{
 		*l = *r;
@@ -80,11 +88,14 @@ void DelCommentaryFun(char *p,int *start,int *end,D_linklist* arr)
 void FindIndiFun(char *p,int *start,int *end,D_linklist* arr)
 {
 	int j=0,k=0;
-	char tempstr[20];
+	char tempstr[100];
 	//while(arr[i][0]!='\0') i++;
 	for(k=*start;k<*end;k++)
 		tempstr[j++] = p[k];
 	tempstr[j]='\0';
+#ifdef ANALEX_DEBUG
+	printf("TEST(analex):find str %s\n",tempstr);
+#endif
 	if(isdigit(tempstr[0]))
 	{
 		append_Dlist_node(arr,INT,tempstr);
@@ -116,13 +127,17 @@ void FindHandleRegec(HandleFun H_fun,char *c_regexp,char *p,D_linklist *arr) //i
 	if(regcomp(&regexp,c_regexp,REG_EXTENDED))
 	//return 0 if Success
 	{
+#ifdef ANALEX_DEBUG
 		printf("Wrong!!\n");
+#endif
 		regfree(&regexp);
 	}
 	res = regexec(&regexp,p+end,1,pmatch,0);
 	while (res==0)
 	{
-		printf("TEXT: find one\n");
+#ifdef ANALEX_DEBUG
+		printf("TEXT(analex): find one\n");
+#endif
 		start = end + pmatch[0].rm_so;
 		end += pmatch[0].rm_eo;
 

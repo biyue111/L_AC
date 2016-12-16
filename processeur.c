@@ -17,10 +17,11 @@
 * In when meet a funcion, the first parameter of the 
 * function is the top value in data stack...
 *************************/
+#ifdef DEBUG
 #define PROCESSEUR_DEBUG
-#define FUNC_BASE_NUM 9
+#endif
 #define LAC_LENGTH 500
-#define VM_LENGTH 100
+#define VM_LENGTH 500
 #define PROCESSEUR_LENGTH 50
 #define CHAIN_MEMORY_SIZE 1000
 
@@ -148,7 +149,9 @@ void lit()//put a INT in stack
 	//{
 		push(INT,type);
 		push(VM[processer_pos+1],data);
+#ifdef PROCESSEUR_DEBUG
 		printf("Test(lit):pushed %d\n",VM[processer_pos+1]);
+#endif
 	//}
 	//else printf("[ERROR]: sementic fault, %s not a INT type\n",currtext);
 }
@@ -252,7 +255,9 @@ void add()
 		res = aug1 + aug2;
 		push(res,data);
 		push(INT,type);
+#ifdef PROCESSEUR_DEBUG
 		printf("Test(add):pushed %d\n",res);
+#endif
 //	}
 	
 }
@@ -352,7 +357,7 @@ void point()
 
 	pop(&aug1,data);
 	pop(&aug_t,type);
-	printf("%d\n",aug1);
+	printf("[L_AC]:%d\n",aug1);
 }
 
 void count()
@@ -387,6 +392,7 @@ void func_type()
 	pop(&aug_t,type);
 	pop(&aug_t,type);
 	int i=0;
+	printf("[L_AC]:");
 	for(i=0;i<chain_len;i++)
 		printf("%c",chain_memory[chain_add+i]);
 	printf("\n");
@@ -817,12 +823,16 @@ do
 	if(currtext[0]==':' && currtext[1]=='\0')
 	{
 		D_to_next(lex_list);//skip ':'
+#ifdef PROCESSEUR_DEBUG
 		printf("Test(processer):enter v_processer:\n");
+#endif
 		error_rep = v_processer(lex_list);//define a function
 		processeur_state = MODE_CALCULATER;
 		if(!error_rep)
 		{
+#ifdef PROCESSEUR_DEBUG
 			printf("Test(processer):Defined the function\n");
+#endif
 			if(!D_to_next(lex_list))//
 				break;
 		}
@@ -836,8 +846,8 @@ do
 		func_VM_pos = LAC[return_LAC_pos + 1 + LAC[return_LAC_pos]];
 #ifdef PROCESSEUR_DEBUG
 		printf("Test(processer): func_LAC_pos:%d, parameter:%d, return:%d, VM_pos:%d\n",
-#endif
 			func_LAC_pos, para_LAC_pos, return_LAC_pos, func_VM_pos);
+#endif
 
 		int para_temp_array[10];//to store the type to reput in stack
 		for(k=0;k<LAC[para_LAC_pos];k++)
@@ -873,10 +883,12 @@ do
 			if(VM[func_VM_pos]==0)//fonction de base
 			{
 #ifdef PROCESSEUR_DEBUG
-				printf("Test: VM pos %d\n",func_VM_pos);
+				printf("Test(processer): VM pos %d\n",func_VM_pos);
 #endif
 				function = processeur[VM[func_VM_pos+1]];
-				printf("execute function %s\n",currtext);
+#ifdef PROCESSEUR_DEBUG
+				printf("Test(processer):execute function %s\n",currtext);
+#endif
 				function();
 				if(processor_error_flag)//have error
 					return;
@@ -919,7 +931,9 @@ do
 		{
 			push(INT,type);
 			push(atoi(currtext),data);
-			printf("pushed %s\n",currtext);
+#ifdef PROCESSEUR_DEBUG
+			printf("Test(processer):pushed %s\n",currtext);
+#endif
 		}
 		else if(var_type == CHAIN)
 		{
@@ -943,13 +957,7 @@ do
 		}
 		else printf("[ERROR]: sementic fault, %s is not a legal type\n",currtext);
 	}
-#ifdef PROCESSEUR_DEBUG
-	printf("Test(processer):current type stack\n");
-	print_stack(type);
 
-	printf("Test(processer):current data stack\n");
-	print_stack(data);
-#endif
 	
 }while(D_to_next(lex_list));
 
@@ -1007,43 +1015,43 @@ void VM_LAC_init()
 	func2LAC(15,LAC_then,-1,"then",0,inputval,0,outputval);
 }
 #endif
-/*
-int main(int argc, char* argv[])
-{
-	int i=0;
-	char input_text[100];
-	D_linklist* ana_lex = create_D_list(0,"");
-	data = create_stack();
-	type = create_stack();
-	retour = create_stack();
 
-	VM_LAC_init();
+//int main(int argc, char* argv[])
+//{
+//	int i=0;
+//	char input_text[100];
+//	D_linklist* ana_lex = create_D_list(0,"");
+//	data = create_stack();
+//	type = create_stack();
+//	retour = create_stack();
+//
+//	VM_LAC_init();
+//
+//	printf("Test: LAC:");
+//	for(i=0;i<LAC_length;i++) printf("%d ",LAC[i]);
+//	printf("\n");
+//	printf("Test: VM:");
+//	for(i=0;i<VM_length;i++) printf("%d ",VM[i]);
+//	printf("\n");
+//	
+//	while(1)
+//	{
+//		printf(">>");
+//		scanf("%99[^\n]",input_text);
+//		getchar();
+//		analex(input_text,ana_lex);
+//		processer(ana_lex);
+//		stack_clear(data);stack_clear(type);stack_clear(retour);
+//		Dlist_clear(ana_lex);
+//
+//
+//	printf("Test: LAC:");
+//	for(i=0;i<LAC_length;i++) printf("%d ",LAC[i]);
+//	printf("\n");
+//	printf("Test: VM:");
+//	for(i=0;i<VM_length;i++) printf("%d ",VM[i]);
+//	printf("\n");
+//	}	
+//	return 0;
+//}
 
-	printf("Test: LAC:");
-	for(i=0;i<LAC_length;i++) printf("%d ",LAC[i]);
-	printf("\n");
-	printf("Test: VM:");
-	for(i=0;i<VM_length;i++) printf("%d ",VM[i]);
-	printf("\n");
-	
-	while(1)
-	{
-		printf(">>");
-		scanf("%99[^\n]",input_text);
-		getchar();
-		analex(input_text,ana_lex);
-		processer(ana_lex);
-		stack_clear(data);stack_clear(type);stack_clear(retour);
-		Dlist_clear(ana_lex);
-
-
-	printf("Test: LAC:");
-	for(i=0;i<LAC_length;i++) printf("%d ",LAC[i]);
-	printf("\n");
-	printf("Test: VM:");
-	for(i=0;i<VM_length;i++) printf("%d ",VM[i]);
-	printf("\n");
-	}	
-	return 0;
-}
-*/

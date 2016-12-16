@@ -5,8 +5,9 @@
 #include "analex.c"
 #include "processeur.c"
 
+#ifdef DEBUG
 #define L_AC_DEBUG
-
+#endif
 void help()
 {
 	printf("./LAC.o [options]\n\
@@ -20,7 +21,6 @@ void help()
 
 void cmd_input(char *input)
 {	
-	printf("Text:");
 	scanf("%99[^0]",input);
 	getchar();
 }
@@ -30,7 +30,7 @@ int file_input(char *input,char *filepath)
 	FILE *fp = fopen(filepath, "r");
 	if(!fp)
 	{
-		printf("Not find file %s", filepath);
+		printf("[ERROR]:Not find file %s, exit.\n", filepath);
 		exit(0);
 	}
 	int i = 0;
@@ -49,7 +49,6 @@ int file_input(char *input,char *filepath)
 
 void interpretor()
 {
-	int i=0;
 	char input_text[100];
 	D_linklist* ana_lex = create_D_list(0,"");
 	data = create_stack();
@@ -59,6 +58,7 @@ void interpretor()
 	VM_LAC_init();
 
 #ifdef L_AC_DEBUG
+	int i=0;
 	printf("Test: LAC:");
 	for(i=0;i<LAC_length;i++) printf("%d ",LAC[i]);
 	printf("\n");
@@ -74,7 +74,13 @@ void interpretor()
 		getchar();
 		analex(input_text,ana_lex);
 		processer(ana_lex);
-		stack_clear(data);stack_clear(type);stack_clear(retour);
+		//stack_clear(data);stack_clear(type);stack_clear(retour);
+		printf("[MESSAGE]:current type stack(top-bottom)\n");
+		print_stack(type);
+
+		printf("[MESSAGE]:current data stack(top-bottom)\n");
+		print_stack(data);
+
 		Dlist_clear(ana_lex);
 
 #ifdef L_AC_DEBUG
@@ -117,7 +123,7 @@ void compilor(char *file)
 #endif
 	analex(input_text,ana_lex);
 	processer(ana_lex);
-	stack_clear(data);stack_clear(type);stack_clear(retour);
+	//stack_clear(data);stack_clear(type);stack_clear(retour);
 	Dlist_clear(ana_lex);
 
 #ifdef L_AC_DEBUG
@@ -135,8 +141,8 @@ void analise_lexical(char *infile,char *outfile)
 	char input_text[1000];
 	file_input(input_text,infile);
 	FILE *outfp;
-#ifdef L_AC_DEBUG
 	int i=0;
+#ifdef L_AC_DEBUG
 	while(input_text[i] != '\0')
 	{
 		printf("%c",input_text[i]);
@@ -162,7 +168,7 @@ int main(int argc, char* argv[])
 	//int i=0;
 	int input_flag = 1;
 #ifdef L_AC_DEBUG
-	printf("TEST: argc = %d\n",argc);
+	printf("TEST(L_AC): argc = %d\n",argc);
 #endif
 	if(argc == 1)
 	{
@@ -172,8 +178,8 @@ int main(int argc, char* argv[])
 	else if(argc == 2)
 	{
 #ifdef L_AC_DEBUG
-		printf("TEST: two arg\n");
-		printf("TEST: argv[1] = %s\n",argv[1]);
+		printf("TEST(L_AC): two arg\n");
+		printf("TEST(L_AC): argv[1] = %s\n",argv[1]);
 #endif
 		if(strcmp(argv[1], "-i") == 0)
 		{
