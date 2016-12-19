@@ -31,7 +31,9 @@
 #define MODE_CALCULATER 0
 #define MODE_COMPILER 1
 #define CON_ELSE 2
-
+#define LIT_VM_POS 0
+#define STR_VM_POS 2
+#define FIN_VM_POS 4
 
 typedef void (*pfunc_base)(void);
 
@@ -39,6 +41,8 @@ int LAC[LAC_LENGTH];
 int LAC_length;
 int VM[VM_LENGTH];
 int VM_length;
+int VM_main[VM_LENGTH];
+int VM_main_length;
 pfunc_base processeur[PROCESSEUR_LENGTH];
 int processeur_length;
 int processeur_state;//0: Exucte functions; 1: define function;
@@ -619,7 +623,7 @@ do
 	}
 	else if(currtext[0]==';' && currtext[1]=='\0')
 	{//right defined user function
-		VM[VM_length++] = 4;//add fin function
+		VM[VM_length++] = FIN_VM_POS;//add fin function
 		func_output_num = temp_type_stack->length;
 		for(k=func_output_num-1;k>=0;k--)
 			pop(&func_output[k],temp_type_stack);
@@ -648,8 +652,8 @@ do
 			//}
 			if(pop(&para_type,temp_type_stack))
 			{
-				int t_type;
-				pop(&t_type, temp_type_stack);
+				//int t_type;
+				//pop(&t_type, temp_type_stack);
 				if(para_type!=LAC[para_LAC_pos+k+1])
 				//find wrong type
 				{
@@ -659,6 +663,9 @@ do
 			}
 			else
 			{
+#ifdef PROCESSEUR_DEBUG
+				printf("Test(v_processer): lack intput, type %d\n",LAC[para_LAC_pos+k+1]);
+#endif
 				func_input[func_input_num++] = LAC[para_LAC_pos+k+1];
 			}
 		}
@@ -759,7 +766,7 @@ do
 		{
 			//if(processeur_state != CON_ELSE)
 			push(INT,temp_type_stack);
-			VM[VM_length++] = 0;//function lit
+			VM[VM_length++] = LIT_VM_POS;//function lit
 			VM[VM_length++] = atoi(currtext);
 #ifdef PROCESSEUR_DEBUG
 			printf("Test(v_processer):add %s in VM\n",currtext);
@@ -768,7 +775,7 @@ do
 		else if(var_type == CHAIN)
 		{
 			push(CHAIN,temp_type_stack);
-			VM[VM_length++] = 2;//function str
+			VM[VM_length++] = STR_VM_POS;//function str
 			int chain_len_pos = VM_length;
 			VM_length++;//keep the space for chain length
 			int chain_len = 0;
@@ -787,6 +794,17 @@ do
 			printf("[ERROR](v_processer): , %s not a INT type\n",currtext);
 		}
 	}
+#ifdef PROCESSEUR_DEBUG
+	int n;
+	printf("Test(v_processer): temp_type_stack (top):");
+	print_stack(temp_type_stack);
+	printf("Test(v_processer): func_input:");
+	for(n=0;n<func_input_num;n++)
+	{
+		printf("%d ",func_input[n]);
+	}
+	printf("\n");
+#endif
 	
 }while(D_to_next(lex_list));
 	printf("[ERROR](v_processer):No ';'");
@@ -812,6 +830,7 @@ pfunc_base function;
 int var_type;
 int k=0;
 int type_test_flag=1;
+int flag_def_function=0;
 int error_rep;
 
 if(!D_to_begin(lex_list)) return;//list empty
@@ -819,6 +838,7 @@ processeur_state = MODE_CALCULATER;
 processor_error_flag = 0;
 do
 {
+	flag_def_function=0;
 	currtext = lex_list->fence->content->value;
 	if(currtext[0]==':' && currtext[1]=='\0')
 	{
@@ -833,13 +853,12 @@ do
 #ifdef PROCESSEUR_DEBUG
 			printf("Test(processer):Defined the function\n");
 #endif
-			if(!D_to_next(lex_list))//
-				break;
+			flag_def_function = 1;//To skip to next loop
 		}
 	}
 
 	currtext = lex_list->fence->content->value;
-	if(test_func(currtext,&func_LAC_pos))
+	if(test_func(currtext,&func_LAC_pos) && !flag_def_function)
 	{
 		para_LAC_pos = func_LAC_pos + 1 + LAC[func_LAC_pos];
 		return_LAC_pos = para_LAC_pos + 1 + LAC[para_LAC_pos];
@@ -924,7 +943,7 @@ do
 		}
 
 	}
-	else//if currtext is a variable
+	else if(!flag_def_function)//if currtext is a variable
 	{
 		var_type = test_type(currtext);
 		if(var_type == INT)
@@ -968,6 +987,7 @@ void VM_LAC_init()
 	//int get_LAC(char *func_base_str,int num_e,int *type_e,int num_s,int *type_s,pfunc_base f)
 	processeur_length = 0;
 	VM_length = 0;
+	VM_main_length = 0;
 	LAC_length = 0;
 	int inputval[10],outputval[10];
 	int k=0;
