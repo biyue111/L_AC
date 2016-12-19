@@ -31,9 +31,9 @@
 #define MODE_CALCULATER 0
 #define MODE_COMPILER 1
 #define CON_ELSE 2
-#define LIT_VM_POS 0
-#define STR_VM_POS 2
-#define FIN_VM_POS 4
+#define LIT_VM_POS 2
+#define STR_VM_POS 4
+#define FIN_VM_POS 6
 
 typedef void (*pfunc_base)(void);
 
@@ -899,6 +899,7 @@ do
 //			{
 //				push(LAC[return_LAC_pos+1+k],type);
 //			}
+			VM_main[VM_main_length++] = func_VM_pos;
 			if(VM[func_VM_pos]==0)//fonction de base
 			{
 #ifdef PROCESSEUR_DEBUG
@@ -916,7 +917,7 @@ do
 			{//begin runtime mode
 				int VM_processer;//the position of the processer in VM
 				push(func_VM_pos + 1,retour);
-				while(stack_get_top(&VM_processer,retour))
+				while(stack_get_top(&VM_processer,retour))//while not in main function
 				{
 					if(VM[VM[VM_processer]] == 0) // if basic function
 					{
@@ -950,6 +951,13 @@ do
 		{
 			push(INT,type);
 			push(atoi(currtext),data);
+
+			VM_main[VM_main_length++] = LIT_VM_POS;
+#ifdef PROCESSEUR_DEBUG
+			printf("Test(processer):write %d to VM_main[%d]\n",
+					atoi(currtext),VM_main_length);
+#endif
+			VM_main[VM_main_length++] = atoi(currtext);
 #ifdef PROCESSEUR_DEBUG
 			printf("Test(processer):pushed %s\n",currtext);
 #endif
@@ -961,14 +969,26 @@ do
 			int chain_add = chain_memory_length;
 			int chain_len = 0;
 			chain_memory_length++;//keep space for the length of chain
+
+			VM_main[VM_main_length++] = STR_VM_POS;//function str
+			int chain_add_VM_main = VM_main_length;
+			VM_main_length++;//keep the space for chain length
+
 			while(currtext[m] != '\0')
 			{
 				chain_len++;
-				chain_memory[chain_memory_length++] = currtext[m++];
+				chain_memory[chain_memory_length++] = currtext[m];
+
+				VM_main[VM_main_length++] = currtext[m];
+				m++;
 			}
 			chain_len--;chain_memory_length--;//elimine " at the end
 			chain_memory[chain_add] = chain_len;
 			push(chain_add,data);
+			
+			VM_main_length--;
+			VM_main[chain_add_VM_main] = chain_len;
+
 #ifdef PROCESSEUR_DEBUG
 			printf("Test(processer):pushed %d char: %s at address %d\n",
 				chain_len, currtext, chain_add);
@@ -980,6 +1000,34 @@ do
 	
 }while(D_to_next(lex_list));
 
+}
+
+void compile_output(int version,char* outfile)
+{//put VM and VM_main together
+#ifdef PROCESSEUR_DEBUG
+	printf("Test(compile_output):Generate lacc\n");
+#endif
+	int i=0;
+	FILE *ofp = fopen(outfile,"w");
+	VM[0] = version;
+	VM[1] = VM_length;//point to enter the main function
+	for(i=0;i<VM_main_length;i++)
+	{
+		VM[VM_length++] = VM_main[i];
+	}
+	if(ofp)
+	{
+		//fprintf(ofp,"%d %d ",version,entrance);
+		for(i=0;i<VM_length;i++)
+			fprintf(ofp,"%d ",VM[i]);
+		fprintf(ofp,"\n");
+		fclose(ofp);
+	}
+	else
+	{
+		printf("[ERROR](compile_output): Cannot open %s\n",outfile);
+		exit(0);
+	}
 }
 
 void VM_LAC_init()
@@ -995,7 +1043,8 @@ void VM_LAC_init()
 	LAC[LAC_length++] = 0;
 	for(k=0;k<PROCESSEUR_LENGTH-1;k++)
 		processeur[k] = NULL;
-
+	VM[VM_length++] = 0;//for version
+	VM[VM_length++] = 0;//keep for entrance of main function
 //int func2LAC(int funcptpos,pfunc_base f,int VM_pos,char *func_base_str,
 //		int num_e,int *type_e,int num_s,int *type_s)
 	func2LAC(0,lit,-1,"lit",0,inputval,0,outputval);//order = 0

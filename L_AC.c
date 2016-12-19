@@ -8,16 +8,20 @@
 #ifdef DEBUG
 #define L_AC_DEBUG
 #endif
+#define VERSION 1
 void help()
 {
 	printf("./LAC.o [options]\n\
 	Options:\n\
 	--help \tDisplay this information\n\
 	-i \tInterpretor mode\n\
-	-f \tCompilor mode, use the file ./input.lac\n\
-	-f [filepath] \tCompilor mode, use custom file\n\
+	-f \tInterpretor mode with file input, using the file ./input.lac\n\
+	-f [filepath] \tInterpretor mode with file input, using custom file\n\
+	-c [inputfile] [outputfile] \t Complie mode\n\
 	-l [inputfile] [outputfile] \tOnly run lexcal analyse\n\
 	-r \truntime mode\n");
+	//Interpretor mode eith file input could also be seen like
+	//complie mode without lacc output
 }
 
 void cmd_input(char *input)
@@ -95,7 +99,7 @@ void interpretor()
 	}	
 }
 
-void compilor(char *file)
+void compiler(char *file)
 {
 	char input_text[1000];
 	file_input(input_text,file);
@@ -190,7 +194,7 @@ int main(int argc, char* argv[])
 		else if(strcmp(argv[1],"-f") == 0)
 		{
 			printf("[Message] Input from .//input//input.lac\n");
-			compilor("input.lac");
+			compiler("input.lac");
 		}
 		else if(strcmp(argv[1],"--help") == 0)
 			help();
@@ -202,7 +206,7 @@ int main(int argc, char* argv[])
 		if(strcmp(argv[1],"-f")==0)
 		{
 			printf("[Message] Input from %s\n",argv[2]);
-			compilor(argv[2]);
+			compiler(argv[2]);
 		}
 		else 
 			input_flag = 0;
@@ -215,6 +219,12 @@ int main(int argc, char* argv[])
 			analise_lexical(argv[2],argv[3]);
 			printf("[Message] Input from %s\n",argv[3]);
 		}
+		else if(strcmp(argv[1],"-c")==0)
+		{
+			printf("[Message] Input from %s\n",argv[2]);
+			compiler(argv[2]);
+			compile_output(VERSION,argv[3]);	
+		}	
 		else 
 			input_flag = 0;
 	}
