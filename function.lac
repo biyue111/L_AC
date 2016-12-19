@@ -1,0 +1,7 @@
+( This function test whether a factor divide a dividant)
+: dividant 100 ;
+: factor 3 ;
+
+: equi = if factor . " divise" count type dividant . else factor . " not divise" count type dividant . then ;
+dividant factor / factor *
+dividant equi 
