@@ -2,72 +2,36 @@
 This project realise a compiler of language L_AC
 
 ## The order of basic functions (fonction de base)
-
-0. lit
-
-1. str
-
-2. fin
-
-3. 
-
-4. 
-
-5. 
-
-6. 
-
-7. 
-
-8. 
-
-9. 
-
-13. .
-
-14. +
-
-15. \-
-
-16. *
-
-17. = (comparison)
-
-18. dup
-
-19. drop
-
-20. swap
-
-21. count
-
-22. type
-
-23. if
-
-24. else
-
-25. then
-
-26. : (optional functions from now on)
-
-27. ;
-
-28. && 
-
-27. ||
-
-28. !
-
-29. <=
-
-30. defer
-
-31. recurse
-
-32. '
-
-33. is
+```
+0 lit (not available in interpreter mode)
+1 str (not available in interpreter mode)
+2 fin (not available in interpreter mode)
+3 .
+4 +
+5 -
+6 *
+7 = (comparison)
+8 dup
+9 drop
+10 swap
+11 count
+12 type
+13 if (not available in interpreter mode)
+14 else (not available in interpreter mode)
+15 then (not available in interpreter mode, no processor implementation)
+16 / (division)
+20 && (optional functions from now on)
+21 ||
+22 !
+23 inferior or equal
+24 defer
+25 recurse (need no processor implementation)
+26 '
+27 is
+28 calculate
+29 catenate
+30 cr (generate a string of \n to put in stack)
+```
 ##Follower
 
 - Hugo
