@@ -19,7 +19,7 @@ void help()
 	-f [filepath] \tInterpretor mode with file input, using custom file\n\
 	-c [inputfile] [outputfile] \t Complie mode\n\
 	-l [inputfile] [outputfile] \tOnly run lexcal analyse\n\
-	-r \truntime mode\n");
+	-r [inputfile] \truntime mode\n");
 	//Interpretor mode eith file input could also be seen like
 	//complie mode without lacc output
 }
@@ -141,6 +141,15 @@ void compiler(char *file)
 #endif
 }
 
+void runtime(int version, char* inputfile)
+{
+	data = create_stack();
+	type = create_stack();
+	retour = create_stack();
+	VM_LAC_init();
+	runtime_mode(version, inputfile);
+}
+
 void analise_lexical(char *infile,char *outfile)
 {
 	char input_text[1000];
@@ -207,6 +216,11 @@ int main(int argc, char* argv[])
 		{
 			printf("[Message] Input from %s\n",argv[2]);
 			compiler(argv[2]);
+		}
+		else if(strcmp(argv[1],"-r")==0)
+		{
+			printf("[Message] Input from %s\n",argv[2]);
+			runtime(VERSION,argv[2]);
 		}
 		else 
 			input_flag = 0;

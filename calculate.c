@@ -31,7 +31,7 @@ int nature(tree_node *root,D_linklist *ana_lex_list,int *finish)
 		if(isdigit(con->value[0]) && con->value[0]!='0')
 		{
 #ifdef CALCULATE_DEBUG
-			printf("Test(nature):right nature %s\n",con->value);
+			printf("Test(nature):correct nature %s\n",con->value);
 #endif
 			memcpy(root->content,con,sizeof(node_content));
 			if(!D_to_pre(ana_lex_list))
@@ -189,11 +189,6 @@ int factor(tree_node *root,D_linklist *ana_lex,int *finish)
 	return flag;
 }
 
-int ana_syn()
-{
-
-}
-
 void post_view_tree(tree_node *root)
 {
 	if(root != NULL)
@@ -205,9 +200,80 @@ void post_view_tree(tree_node *root)
 	}
 }
 
+int calcule_res(tree_node *root,int *res)
+{
+	int a,b,lc,rc;
+	//lc has leftchild? rc has rightchild
+	//a value of leftchild
+	//b value of rightchild
+	if(root != NULL)
+	{
+		char *nodetext = root->content->value;
+#ifdef CALCULATE_DEBUG
+		printf("Test(calcule_res):get %s\n",nodetext);
+#endif
+		if(strcmp(nodetext,"")==0)
+		{
+			if(calcule_res(root->leftchild,res))
+				return 1;
+			if(calcule_res(root->rightchild,res))
+				return 1;
+		}
+		lc = calcule_res(root->leftchild,&a);
+		rc = calcule_res(root->rightchild,&b);
+		if(lc && rc)
+		{
+			switch(nodetext[0])
+			{
+			case '+':
+				*res = a+b;
+				return 1;
+			case '-':
+				*res = a-b;
+				return 1;
+			case '*':
+				*res = a*b;
+				return 1;
+			case '/':
+				*res = a/b;
+				return 1;
+			default:
+				printf("[ERROR](calcule_res):Wrong operater\n");
+				return 0;
+			}
+		}
+		else if(rc)
+		{
+			switch(nodetext[0])
+			{
+			case '+':
+				*res = b;
+				return 1;
+			case '-':
+				*res = -b;
+				return 1;
+			default:
+				printf("[ERROR](calcule_res):Wrong operater\n");
+				return 0;
+			}
+		}
+		else if(!rc && !lc)//Don't have child
+		{
+			*res = atoi(nodetext);
+			return 1;
+		}
+		else
+		{
+			printf("[ERROR](calcule_res):Wrong format\n");
+			return 0;
+		}
+			
+	}
+	return 0;//nothing to return 	
+}
 
 //void analex(char *text, D_linklist* ana_lex )
-int calculate(char *text)
+int calculate(char *text,int *res)
 {
 	D_linklist *ana_lex = create_D_list(0,"");
 	tree_node *root_node = create_tree_node(0,"");
@@ -218,16 +284,28 @@ int calculate(char *text)
 	int tree_created_flag;
 	int finish_flag=0;
 	D_to_end(ana_lex);
-	tree_created_flag = term(root_node, ana_lex,&finish_flag);
+	tree_created_flag = term(root_node, ana_lex,&finish_flag);//build the tree
+	if(!finish_flag)
+	{
+		printf("[ERROR](calculate):Not finish\n");
+		return 0;
+	}
+#ifdef CALCULATE_DEBUG
 	post_view_tree(root_node);
 	printf("\n");
+#endif
+	return calcule_res(root_node,res);
 }
 
 
-int main(int argc, char* argv[])
-{
-	char inputstr[100];
-	scanf("%99[^\n]",inputstr);
-	getchar();
-	calculate(inputstr);
-}
+//int main(int argc, char* argv[])
+//{
+//	char inputstr[100];
+//	scanf("%99[^\n]",inputstr);
+//	getchar();
+//	int res;
+//	if(calculate(inputstr,&res))
+//	{
+//		printf("Result: %d\n",res);
+//	}
+//}

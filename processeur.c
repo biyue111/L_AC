@@ -5,6 +5,8 @@
 #include "util.c"
 #include "analex.h"
 #include "analex.c"
+#include "calculate.h"
+#include "calculate.c"
 #ifndef _PROCESSEUR_C
 #define _PROCESSEUR_C
 /*************************
@@ -421,7 +423,8 @@ void equal()
 	push(INT,type);
 }
 
-void LAC_if(){
+void LAC_if()
+{
 	int process;
 	int aug1;
 	int aug_t;
@@ -438,7 +441,8 @@ void LAC_if(){
 		printf("[ERROR](if): Try to use if in calculator mode");
 }
 
-void LAC_else(){
+void LAC_else()
+{
 	int process;
 	//only in condition <iftrue> we will meet else function
 	if(pop(&process,retour))
@@ -447,7 +451,8 @@ void LAC_else(){
 		printf("[ERROR](else): Try to use if in calculator mode");
 }
 
-void LAC_then(){
+void LAC_then()
+{
 	int process;
 	//only in condition <iftrue> we will meet else function
 	if(pop(&process,retour))
@@ -458,14 +463,35 @@ void LAC_then(){
 
 }
 
-/*
-void two_point()
-*Let function processeur call v_prosseur 
-* in the next loop
+void LAC_calculate()
 {
-	processeur_state = 1;
+	int process;
+	char formula[100];
+	if(pop(&process,retour))
+		push(process+1,retour);
+	int chain_add,chain_len,aug_t;
+	pop(&chain_add,data);
+	pop(&aug_t,type);
+	chain_len = chain_memory[chain_add++];
+	int i=0;
+	for(i=0;i<chain_len;i++)
+		formula[i]=(char)chain_memory[chain_add+i];
+	formula[i]='\0';
+#ifdef PROCESSEUR_DEBUG
+	printf("Test(LAC_calculate):Get formula: %s\n",formula);
+#endif
+	int res;
+	if(calculate(formula,&res))
+	{
+		push(res,data);
+		push(INT,type);
+	}
+	else
+	{
+		printf("[ERROR](LAC_calculate):Wrong formula %s\n",formula);
+	}
 }
-*/
+
 int test_func(char* s,int *LAC_pos)
 {
 	int pos,s_length=0,k=0,flag=1;//pos in LAC
@@ -818,10 +844,6 @@ void exit_processer()
 	
 }
 
-int runtime()
-{
-	return 0;
-}
 
 void processer(D_linklist* lex_list)
 {//mode de calculatrice
@@ -1011,6 +1033,7 @@ void compile_output(int version,char* outfile)
 	FILE *ofp = fopen(outfile,"w");
 	VM[0] = version;
 	VM[1] = VM_length;//point to enter the main function
+	VM[VM_length++] = 2;//indicater of main function
 	for(i=0;i<VM_main_length;i++)
 	{
 		VM[VM_length++] = VM_main[i];
@@ -1028,6 +1051,97 @@ void compile_output(int version,char* outfile)
 		printf("[ERROR](compile_output): Cannot open %s\n",outfile);
 		exit(0);
 	}
+}
+
+void runtime_mode(int version,char *infile)
+{
+
+	int VM_processer;//the position of the processer in VM
+	pfunc_base function;
+	FILE *ifp = fopen(infile,"r");
+	int i = 0;
+	if(ifp)
+	{
+		while(fscanf(ifp,"%d",&VM[i++]) > 0)
+		{ }
+	}
+	else
+	{
+		printf("[ERROR] Can't open %s\n",infile);
+		exit(0);
+	}
+	VM_length = i-1;
+#ifdef PROCESSEUR_DEBUG
+	int n=0;
+	printf("Test(runtime_mode): ");
+	for(n=0;n<VM_length;n++)
+	{
+		printf("%d ",VM[n]);
+	}
+	printf("\n");
+#endif
+	if(VM[0] != version)
+	{
+		printf("[ERROR](runtime_mode):Not right version\n");
+		return;
+	}
+
+	VM_processer = VM[1];
+
+//
+//	while(VM_processer++ < VM_length)
+//	{
+//		int func_VM_pos = VM[VM_processer];
+//		if(VM[func_VM_pos]==0)//fonction de base
+//		{
+//#ifdef PROCESSEUR_DEBUG
+//			printf("Test(processer): VM pos %d\n",func_VM_pos);
+//#endif
+//			function = processeur[VM[func_VM_pos+1]];
+//#ifdef PROCESSEUR_DEBUG
+//			printf("Test(processer):execute function %s\n",currtext);
+//#endif
+//			function();
+//			if(processor_error_flag)//have error
+//				return;
+//		}
+//		else if(VM[func_VM_pos]==1)
+//		{
+//			push(func_VM_pos + 1,retour);
+	push(VM_processer + 1,retour);//pass 2 at the beginning of main
+	while(stack_get_top(&VM_processer,retour))//while not in main function
+	{
+#ifdef PROCESSEUR_DEBUG
+		printf("Test(runtime_mode):get VM_processer %d\n",VM_processer);
+#endif
+		if(VM_processer >= VM_length)
+		{
+			printf("[MESSAGE]:Programme finish.\n");
+			break;
+		}
+		if(VM[VM[VM_processer]] == 0) // if basic function
+		{
+			function = processeur[VM[VM[VM_processer] + 1]];
+#ifdef PROCESSEUR_DEBUG
+			printf("Test(processer): execute VM pos %d\n",VM[VM_processer]);
+#endif
+			function();
+		}
+		else if(VM[VM[VM_processer]] == 1)
+		{
+			//int temp;
+			//pop(&temp,retour);
+			//push(temp + 1,retour);
+			push(VM[VM_processer] + 1,retour);
+		}
+		else
+		{
+			printf("[ERROR](processeur):wrong VM_number %d.\n", VM_processer);
+			exit(0);
+		}
+	}
+		//}
+	//}
 }
 
 void VM_LAC_init()
@@ -1082,6 +1196,9 @@ void VM_LAC_init()
 	func2LAC(14,LAC_else,-1,"else",0,inputval,0,outputval);
 
 	func2LAC(15,LAC_then,-1,"then",0,inputval,0,outputval);
+	inputval[0]=CHAIN;
+	outputval[1]=INT;
+	func2LAC(28,LAC_calculate,-1,"calculate",1,inputval,1,outputval);
 }
 #endif
 
