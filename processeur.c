@@ -465,6 +465,7 @@ void LAC_then()
 
 void LAC_calculate()
 {
+	printf("Enter LAC_calculate\n");
 	int process;
 	char formula[100];
 	if(pop(&process,retour))
@@ -861,6 +862,7 @@ processor_error_flag = 0;
 do
 {
 	flag_def_function=0;
+	type_test_flag=1;
 	currtext = lex_list->fence->content->value;
 	if(currtext[0]==':' && currtext[1]=='\0')
 	{

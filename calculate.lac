@@ -4,7 +4,12 @@
 " (-10)" calculate .
 " 1+(-10)" calculate .
 " 1+2*(3+4)" calculate .
-\ " ((-10)*3)+(100/10)" calculate .
+" ((-10)*3)+(100/10)" calculate .
 
 ( The following cases are wrong input)
-" (-10*3)+(100/10)" calculate .
+\ " (-10*3)+(100/10)" calculate .
+" 1++2" calculate .
+" 1+*2" calculate .
+" 1+-*/2" calculate .
+" 2 2 2" calculate .
+" 2.2+1" calculate .

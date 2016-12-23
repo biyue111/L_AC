@@ -20,7 +20,7 @@ vartypes verify_type(char *s) //return the type
 
 int nature(tree_node *root,D_linklist *ana_lex_list,int *finish)
 {
-	int flag = 1,moved;
+	int flag = 1;
 	node_content *con;
 	//if(flag && D_to_pre(ana_lex_list))//successfully move to pre
 	{
@@ -29,6 +29,28 @@ int nature(tree_node *root,D_linklist *ana_lex_list,int *finish)
 		printf("Test(nature):get %s\n",con->value);
 #endif
 		if(isdigit(con->value[0]) && con->value[0]!='0')
+		{
+			int k=0;
+			while(con->value[k]!='\0')
+			{
+				if(!(isdigit(con->value[k]) && con->value[k]!='.'))
+				{
+#ifdef CALCULATE_DEBUG
+					printf("[ERROR](nature):Wrong nature %s\n",con->value);
+#endif
+					flag = 0;
+					break;
+				}	
+				k++;
+
+			}
+
+		}
+		else
+		{
+			flag = 0;
+		}
+		if(flag)
 		{
 #ifdef CALCULATE_DEBUG
 			printf("Test(nature):correct nature %s\n",con->value);
@@ -68,9 +90,15 @@ int term(tree_node *root,D_linklist *ana_lex_list,int *finish)
 		if((con->value[0]=='+'||con->value[0]=='-'))
 		{
 			memcpy(root->content,con,sizeof(node_content));
-			
+
 			if(flag && D_to_pre(ana_lex_list))
 			{
+				con = ana_lex_list->fence->content;
+				if(strcmp(con->value,"(")==0)
+				{//keep the position on (
+				 //function factor will test it
+					return flag;
+				}
 				tree_node *l_c = create_tree_node(0,"");
 				root->leftchild = l_c;
 				flag = term(root->leftchild,ana_lex_list,finish);
@@ -159,6 +187,7 @@ int factor(tree_node *root,D_linklist *ana_lex,int *finish)
 	}
 	else
 	{
+		flag = 0;
 		printf("[ERROR]:Wrong input in factor %s\n",con->value);
 	}
 
@@ -289,6 +318,12 @@ int calculate(char *text,int *res)
 	{
 		printf("[ERROR](calculate):Not finish\n");
 		return 0;
+	}
+	if(!tree_created_flag)
+	{
+		printf("[ERROR](calculate):Wrong formule\n");
+		return 0;
+
 	}
 #ifdef CALCULATE_DEBUG
 	post_view_tree(root_node);
