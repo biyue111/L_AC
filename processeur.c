@@ -465,7 +465,6 @@ void LAC_then()
 
 void LAC_calculate()
 {
-	printf("Enter LAC_calculate\n");
 	int process;
 	char formula[100];
 	if(pop(&process,retour))
@@ -654,7 +653,9 @@ do
 		func_output_num = temp_type_stack->length;
 		for(k=func_output_num-1;k>=0;k--)
 			pop(&func_output[k],temp_type_stack);
+#ifdef PROCESSEUR_DEBUG
 		printf("Test(v_processer):function name is %s\n",func_name);
+#endif
 		//add user function to LAC and VM
 		//funcpos is -1, which will not be used in func2LAC becasue of NULL finction pt
 		func2LAC(-1,NULL,VM_init_length,func_name,func_input_num,func_input,func_output_num,func_output);
@@ -668,7 +669,9 @@ do
 		return_LAC_pos = para_LAC_pos + 1 + LAC[para_LAC_pos];
 		func_VM_pos = LAC[return_LAC_pos + 1 + LAC[return_LAC_pos]];//Cfa of function
 
+#ifdef PROCESSEUR_DEBUG
 		printf("Test(v_processer): func_LAC_pos:%d, re:%d\n",func_LAC_pos, return_LAC_pos);
+#endif
 		//test type of parameter
 		for(k=0;k<LAC[para_LAC_pos];k++)
 		{
@@ -711,7 +714,9 @@ do
 		//if condition statement
 		if(strcmp(currtext,"if") == 0)
 		{
+#ifdef PROCESSEUR_DEBUG
 			printf("Test(v_processeur):find if\n");
+#endif
 			push(VM_length,condition_stack);
 			VM_length++;//leave the space in VM for condition jump
 			s_push(temp_type_stack, if_type_s_stack);//push the before-if type state
@@ -726,8 +731,10 @@ do
 			//find the postion of "if"
 			pop(&con_pos,condition_stack);
 			VM[con_pos] = VM_length;
+#ifdef PROCESSEUR_DEBUG
 			printf("Test(v_processeur):find else and write else's postion %d to if'position %d\n",
 				VM_length,con_pos);
+#endif
 			push(VM_length,condition_stack);
 			VM_length++;
 			stack *temp_s = create_stack();
@@ -741,6 +748,7 @@ do
 			push(func_input_num, func_input_num_stack);
 			temp_type_stack = temp_s;//reuse the state just before if
 			func_input_num = temp_func_num;
+#ifdef PROCESSEUR_DEBUG
 			int n;
 			for(n=0;n<10;n++)
 			{
@@ -749,6 +757,7 @@ do
 			}
 			printf("\n");
 			printf("%d\n", func_input_num);
+#endif
 
 		}
 		else if(strcmp(currtext,"then") == 0)

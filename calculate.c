@@ -13,10 +13,6 @@ from right to left
 #ifdef DEBUG
 #define CALCULATE_DEBUG
 #endif
-vartypes verify_type(char *s) //return the type
-{
-
-}
 
 int nature(tree_node *root,D_linklist *ana_lex_list,int *finish)
 {
@@ -72,7 +68,7 @@ int nature(tree_node *root,D_linklist *ana_lex_list,int *finish)
 }
 int term(tree_node *root,D_linklist *ana_lex_list,int *finish)
 {
-	int flag = 1,moved;
+	int flag = 1;
 	node_content *con;
 	tree_node *r_c = create_tree_node(0, "");
 	root->rightchild = r_c;
@@ -138,7 +134,7 @@ int term(tree_node *root,D_linklist *ana_lex_list,int *finish)
 
 int factor(tree_node *root,D_linklist *ana_lex,int *finish)
 {
-	int flag = 1,moved;
+	int flag = 1;
 	node_content *con;
 	//if(!(flag && D_to_pre(ana_lex)))//successfully move to pre
 	//{
